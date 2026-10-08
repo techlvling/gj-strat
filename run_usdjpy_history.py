@@ -86,6 +86,23 @@ def main():
                                   avg_nights=("swap_nights", "mean"))
     side.index.name = "Side (A, " + main_cost + ")"
 
+    # ---------------- cost sensitivity (A, main cost): commission and stop slippage, in R
+    stop_exit = lg["exit_reason"].isin(["SL", "BE"]).astype(float)
+    comm_pips = 7 / (1000 / lg["entry_price"])          # $7 per lot round turn, in USDJPY pips
+    cost_rows = []
+    for name, slip, comm in [("as tested (Dukascopy spread only)", 0.0, 0), ("+ $7/lot commission", 0.0, 1),
+                             ("+ $7 + 0.5 pip slippage per stop fill", 0.5, 1),
+                             ("+ $7 + 1.0 pip slippage per stop fill", 1.0, 1)]:
+        adj = lg["R"] - (slip * (1 + stop_exit) + comm * comm_pips) / lg["risk_pips"]
+        old = adj[lg["year"] < FOUND.year]
+        cost_rows.append({"costs": name, "avg_R all": adj.mean(), "t all": tstat(adj),
+                          "avg_R 2010-2023": old.mean() if len(old) else np.nan,
+                          "t 2010-2023": tstat(old) if len(old) > 1 else np.nan,
+                          "positive years": int((adj.groupby(lg["year"]).mean() > 0).sum()),
+                          "years": lg["year"].nunique()})
+    cost = pd.DataFrame(cost_rows).set_index("costs")
+    cost.index.name = "Version A, " + main_cost
+
     # ---------------- charts
     fig, axes = plt.subplots(1, 2, figsize=(15, 5.2), gridspec_kw={"width_ratios": [1.6, 1]})
     ax = axes[0]
@@ -128,6 +145,11 @@ def main():
         rep.append("")
     rep += ["![USDJPY history](usdjpy_history.png)\n", "## Version A by year\n",
             fmt_table(by_year, ".3f"), "\n## Version A by side\n", fmt_table(side, ".3f"),
+            "\n## Cost sensitivity\n",
+            "Stop orders (entry, SL, BE) can fill worse than their price; TP is a limit and does not. "
+            "Commission $7 per lot round turn is converted to pips at each trade's price. The median "
+            "risk is only 10–27 pips (one box), so a pip of cost is 4–10% of 1R.\n",
+            fmt_table(cost, ".3f"),
             "\nTrade logs (with swap): `trade_logs/`.\n"]
     with open(f"{out}/REPORT.md", "w") as f:
         f.write("\n".join(rep))
@@ -139,6 +161,7 @@ def main():
                       f"t={s['sqn']:+.2f} DD={s['max_dd_pct']:5.1f}% ret={s['net_return_pct']:+9.1f}%")
     print(by_year.round(3))
     print(side.round(3))
+    print(cost.round(3))
 
 
 if __name__ == "__main__":
