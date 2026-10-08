@@ -378,3 +378,18 @@ def test_account_books_swap_into_pnl_and_r():
     assert sw.swap_usd[0] == pytest.approx(0.46 * 100_000 * 0.05 * 3 / 365, abs=0.01)
     assert sw.pnl_usd[0] == pytest.approx(plain.pnl_usd[0] + sw.swap_usd[0], abs=0.02)
     assert sw.R[0] > plain.R[0]
+
+
+# ----------------------------------------------------------------- relative small-box filter
+def test_small_box_filter_uses_only_previous_days():
+    m = weeks_market()
+    days = [pd.Timestamp(f"2024-01-{d:02d}") for d in (2, 3, 4, 5)]
+    for d, half in zip(days, (0.20, 0.20, 0.05, 0.20)):           # boxes 40, 40, 10, 40 pips
+        bar(m, "05:10", 190.0, 190.0 + half, 190.0, 190.0, day=d)
+        bar(m, "05:40", 190.0, 190.0, 190.0 - half, 190.0, day=d)
+    p = Params(sl_box_mult=1.0, min_box_rel=0.5, box_lookback=2)
+    _, c = run(m, p, days)
+    assert c.skipped_small_box == 1                    # Jan 4: 10 < 0.5 x median(40, 40)
+    # lookback 3: Jan 4 has no full window yet; Jan 5 window (40, 40, 10) -> median 40, 40 is fine
+    _, c = run(m, Params(sl_box_mult=1.0, min_box_rel=0.5, box_lookback=3), days)
+    assert c.skipped_small_box == 0

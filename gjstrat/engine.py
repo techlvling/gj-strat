@@ -44,6 +44,8 @@ class Params:
                                        # C: fade - first break is virtual, trade its SL (A re-entry)
                                        # W: weekly-breakout bias - one side only, one trade, no re-entry
     reentry_wait: int = 6
+    min_box_rel: float | None = None   # set: skip the day if its box < k x median box of the
+    box_lookback: int = 20             #   previous `box_lookback` valid days (needs a full window)
     sl_box_mult: float | None = None   # set: SL = mult x that day's box (+ spread) instead of sl_pips;
                                        # the BE offset scales the same way (be_plus / sl_pips of it)
     fade_expiry_11: bool = True        # C: reversal stop expires at 11:00 (False: lives with virtual trade)
@@ -108,6 +110,7 @@ class Counters:
     w_no_bias: int = 0                  # W: no weekly bias -> no trade
     w_buy_days: int = 0                 # W: buy stop only
     w_sell_days: int = 0                # W: sell stop only
+    skipped_small_box: int = 0          # box < min_box_rel x recent median box
     skipped_dates: list = field(default_factory=list)
 
     def as_dict(self) -> dict:
@@ -232,6 +235,7 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
         raise ValueError("Version W needs a bias map (gjstrat.bias.weekly_bias)")
     days = trading_days(m) if days is None else days
     c = Counters()
+    recent_boxes: list[float] = []                        # valid days' box sizes, oldest first
     trades: list[Trade] = []
     for day in days:
         c.days_total += 1
@@ -254,6 +258,12 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
         hi = float(m.bh[rs:rs + 60].max())
         lo = float(m.bl[rs:rs + 60].min())
         range_pips = (hi - lo) / m.pip
+        if p.min_box_rel is not None:
+            window = recent_boxes[-p.box_lookback:]
+            recent_boxes.append(hi - lo)
+            if len(window) == p.box_lookback and hi - lo < p.min_box_rel * float(np.median(window)):
+                c.skipped_small_box += 1
+                continue
         if p.sl_box_mult is None:
             sl_dist, be_off = p.sl_pips * m.pip, p.be_plus * m.pip
         else:
