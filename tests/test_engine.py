@@ -221,3 +221,51 @@ def test_accounting_handles_stop_on_entry_bar():
     trades, _ = go(m)
     log = account(trades, m)
     assert log.R[0] == pytest.approx(-1.0) and log.lots[0] > 0 and log.pnl_usd[0] < 0
+
+
+# ----------------------------------------------------------------- Version C (fade the break)
+def park(m, start, end, bid):
+    for i in range(i_of(m, start), i_of(m, end)):
+        m.bo[i] = m.bh[i] = m.bl[i] = m.bc[i] = bid
+        m.ao[i] = m.ah[i] = m.al[i] = m.ac[i] = bid + SPREAD
+
+
+def test_fade_buys_at_the_virtual_sell_stop_loss():
+    m = with_range(flat_market())
+    bar(m, "06:10", 190.0, 190.0, 189.79, 189.85)     # low breaks: virtual sell @189.80, SL 190.12 (ask)
+    bar(m, "07:00", 190.0, 190.10, 190.0, 190.05)     # ask high 190.12 -> virtual SL -> real BUY @190.12
+    trades, c = go(m, version="C", be_trigger=None)
+    (t,) = trades
+    assert (t.side, t.num, t.entry, t.entry_i) == ("BUY", 1, pytest.approx(190.12), i_of(m, "07:00"))
+    assert t.risk == pytest.approx(0.32) and c.fade_filled == 1
+
+
+def test_fade_cancelled_when_virtual_trade_wins():
+    m = with_range(flat_market())
+    bar(m, "06:10", 190.0, 190.0, 189.79, 189.85)
+    bar(m, "07:00", 189.0, 189.0, 188.50, 188.6)      # virtual sell TP 189.80-1.28=188.52 (ask)
+    bar(m, "08:00", 190.0, 190.20, 190.0, 190.1)      # later rally must not trigger anything
+    trades, c = go(m, version="C", be_trigger=None)
+    assert trades == [] and c.fade_cancel_tp == 1
+
+
+def test_fade_stop_expires_at_11_unless_noexpiry():
+    m = with_range(flat_market())
+    bar(m, "06:10", 190.0, 190.0, 189.79, 189.85)
+    bar(m, "12:00", 190.0, 190.10, 190.0, 190.05)     # virtual SL only after 11:00
+    trades, c = go(m, version="C", be_trigger=None)
+    assert trades == [] and c.fade_expired == 1
+    trades, c = go(m, version="C", be_trigger=None, fade_expiry_11=False)
+    assert len(trades) == 1 and trades[0].side == "BUY" and trades[0].entry_i == i_of(m, "12:00")
+
+
+def test_fade_reversal_stopped_before_11_gets_reentry():
+    m = with_range(flat_market())
+    bar(m, "06:10", 190.0, 190.0, 189.79, 189.85)
+    bar(m, "07:00", 190.0, 190.10, 190.0, 190.05)     # real BUY @190.12, SL 190.12-0.32=189.80 (bid)
+    bar(m, "07:30", 189.9, 189.9, 189.75, 189.78)     # BUY stopped; 6-bar low 189.75 < range low
+    park(m, "07:31", "08:00", 189.85)
+    bar(m, "08:00", 189.85, 189.85, 189.70, 189.72)   # A-style sell stop @189.75 fills
+    trades, c = go(m, version="C", be_trigger=None)
+    assert [(t.side, t.num, t.reason) for t in trades][:2] == [("BUY", 1, "SL"), ("SELL", 2, trades[1].reason)]
+    assert trades[1].entry == pytest.approx(189.75)

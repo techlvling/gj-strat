@@ -7,7 +7,15 @@ pip install pandas numpy matplotlib requests pytest
 python -m pytest -q                 # rule-by-rule engine tests (hand-built candles)
 python run_backtest.py --synthetic  # random-walk sanity run (should show no edge)
 python run_backtest.py              # downloads Dukascopy data into data/ (cached), full run
+python compare_versions.py          # base settings: A vs B vs C (fade) -> results/version_comparison/
 ```
+
+Version C ("fade"): the first break of the box is not traded. It is followed virtually with
+the normal SL/TP/BE, and an opposite stop sits at its SL price. That stop fills only if the
+virtual trade is stopped out, and is cancelled if the virtual trade reaches TP or BE first.
+By default the stop expires at 11:00 IST like every other order
+(`Params(fade_expiry_11=False)` keeps it alive as long as the virtual trade). The real trade
+then follows the normal rules, including the Version A re-entry.
 
 Options: `--end YYYY-MM-DD` (last UTC day to download), `--commission 7` (USD per lot round
 turn), `--max-missing N` (tick-less minutes tolerated in the range window, default 0),

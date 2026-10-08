@@ -40,8 +40,10 @@ class Params:
     sl_pips: float = 30.0
     be_trigger: float | None = 3.0     # in R; None = break-even off
     be_plus: float = 5.0               # pips beyond entry for the moved stop
-    version: str = "A"                 # A: re-entry at 6-bar extreme, B: at original range level
+    version: str = "A"                 # A: re-entry at 6-bar extreme, B: at original range level,
+                                       # C: fade - first break is virtual, trade its SL (A re-entry)
     reentry_wait: int = 6
+    fade_expiry_11: bool = True        # C: reversal stop expires at 11:00 (False: lives with virtual trade)
 
     def __post_init__(self):
         if self.be_trigger is not None and self.be_trigger >= self.rr:
@@ -53,7 +55,8 @@ class Params:
 
     @property
     def label(self) -> str:
-        return f"RR{self.rr:g}_SL{self.sl_pips:g}_BE{self.be_label}_{self.version}"
+        v = self.version + ("" if self.version != "C" or self.fade_expiry_11 else "-noexp")
+        return f"RR{self.rr:g}_SL{self.sl_pips:g}_BE{self.be_label}_{v}"
 
 
 @dataclass
@@ -92,6 +95,12 @@ class Counters:
     reentry_expired: int = 0            # re-entry stop not filled by 11:00
     reentry_filled: int = 0
     exit_after_11_no_reentry: int = 0   # SL/BE exit at/after 11:00
+    fade_cancel_tp: int = 0             # C: virtual breakout hit TP -> reversal cancelled
+    fade_cancel_be: int = 0             # C: virtual breakout hit BE stop -> reversal cancelled
+    fade_cancel_open: int = 0           # C: virtual breakout still open at data end
+    fade_expired: int = 0               # C: virtual SL hit at/after 11:00 -> reversal stop expired
+    fade_filled: int = 0                # C: reversal trades opened
+    fade_same_bar: int = 0              # C: reversal filled on the very bar that broke the range
     skipped_dates: list = field(default_factory=list)
 
     def as_dict(self) -> dict:
@@ -243,6 +252,26 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
         side, ei, px, gap = hit
         if ei == place and gap:
             c.open_fill_0600 += 1
+        if p.version == "C":
+            # the breakout is virtual: its stop-loss price is where the real, opposite trade starts
+            vrisk = p.sl_pips * PIP + max(m.ao[ei] - m.bo[ei], 0.0)
+            vxi, vxp, vreason, _ = manage(m, side, ei, px, vrisk, p)
+            if vreason != "SL":
+                if vreason == "TP":
+                    c.fade_cancel_tp += 1
+                elif vreason == "BE":
+                    c.fade_cancel_be += 1
+                else:
+                    c.fade_cancel_open += 1
+                continue
+            if p.fade_expiry_11 and vxi >= expiry:
+                c.fade_expired += 1
+                continue
+            vsl = px + vrisk if side == "SELL" else px - vrisk
+            c.fade_filled += 1
+            c.fade_same_bar += vxi == ei
+            gap = abs(vxp - vsl) > EPS            # virtual stop gapped -> reversal fills at the open
+            side, ei, px = ("BUY" if side == "SELL" else "SELL"), vxi, vxp
         num = 1
         while True:
             spread = max(m.ao[ei] - m.bo[ei], 0.0)
@@ -262,14 +291,14 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
                 break
             if side == "BUY":                             # stopped out long -> sell stop
                 ext = float(m.bl[xi:q].min())
-                lvl = ext if (p.version == "A" and ext < lo) else lo
+                lvl = ext if (p.version in ("A", "C") and ext < lo) else lo
                 if m.bo[q] <= lvl + EPS:
                     c.reentry_skipped_invalid += 1
                     break
                 hit = find_entry(m, q, expiry, None, lvl)
             else:                                         # stopped out short -> buy stop
                 ext = float(m.bh[xi:q].max())
-                lvl = ext if (p.version == "A" and ext > hi) else hi
+                lvl = ext if (p.version in ("A", "C") and ext > hi) else hi
                 if m.ao[q] >= lvl - EPS:
                     c.reentry_skipped_invalid += 1
                     break
