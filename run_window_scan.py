@@ -68,22 +68,25 @@ def main():
     global M, DAYS, SWAP
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="results/window_scan")
+    ap.add_argument("--replot", action="store_true", help="rebuild chart/report from scan.csv")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
-    M = build_market(SYM, date(2010, 1, 1), date(2026, 10, 7), "data/raw",
-                     "data/usdjpy_2010-01-01_2026-10-07.npz")
-    DAYS = trading_days(M, start="2010-01-01")
-    SWAP = SwapModel.from_fred("rates", 1.0)
-
-    grid = [(h, w) for h in HOURS for w in WINDOWS]
-    with Pool(os.cpu_count()) as pool:
-        rows = []
-        for k, rs in enumerate(pool.imap_unordered(evaluate, grid, chunksize=2), 1):
-            rows += rs
-            if k % 12 == 0:
-                print(f"{k}/{len(grid)} windows done", flush=True)
-    res = pd.DataFrame(rows)
-    res.to_csv(f"{args.out}/scan.csv", index=False)
+    if args.replot:
+        res = pd.read_csv(f"{args.out}/scan.csv")
+    else:
+        M = build_market(SYM, date(2010, 1, 1), date(2026, 10, 7), "data/raw",
+                         "data/usdjpy_2010-01-01_2026-10-07.npz")
+        DAYS = trading_days(M, start="2010-01-01")
+        SWAP = SwapModel.from_fred("rates", 1.0)
+        grid = [(h, w) for h in HOURS for w in WINDOWS]
+        with Pool(os.cpu_count()) as pool:
+            rows = []
+            for k, rs in enumerate(pool.imap_unordered(evaluate, grid, chunksize=2), 1):
+                rows += rs
+                if k % 12 == 0:
+                    print(f"{k}/{len(grid)} windows done", flush=True)
+        res = pd.DataFrame(rows)
+        res.to_csv(f"{args.out}/scan.csv", index=False)
 
     des = res[res.period == "design"].set_index(["hour", "window"])
     chk = res[res.period == "check"].set_index(["hour", "window"])
@@ -109,7 +112,8 @@ def main():
         ax.set_yticks(range(24), [f"{h:02d}:00" for h in HOURS])
         ax.set_xticks(range(7), [str(w) for w in WINDOWS])
         for (hh, ww), mark in ((base, "□"), (pick, "◎")):
-            ax.text(WINDOWS.index(ww) + 0.38, HOURS.index(hh) - 0.25, mark, fontsize=11, color=INK)
+            ax.text(WINDOWS.index(ww) + 0.36, HOURS.index(hh) - 0.22, mark, fontsize=10, color=INK,
+                    ha="center", va="center")
     fig.suptitle("USDJPY box breakout by time of day (□ = current 05:00 box + 5 h, ◎ = design pick)",
                  x=0.01, ha="left", fontweight="bold")
     fig.tight_layout()
