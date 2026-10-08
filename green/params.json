@@ -1,0 +1,16 @@
+{
+  "name": "USDJPY Tokyo-open box breakout, Version B",
+  "symbol": "USDJPY",
+  "timezone": "IST (UTC+5:30)",
+  "box": "05:00-05:59 IST (23:30-00:29 UTC)",
+  "orders_placed": "06:00 IST, buy stop at box high, sell stop at box low (OCO)",
+  "orders_expire": "11:00 IST",
+  "sl": "1 x box size + spread at entry",
+  "rr": 9,
+  "break_even": {"trigger_R": 3, "move_sl_to": "entry + 5/30 of SL distance"},
+  "reentry": "after SL/BE before 11:00: wait 6 bars, opposite side at ORIGINAL box level; skip if price already beyond",
+  "max_trades_per_day": 2,
+  "stop_after_tp": true,
+  "risk_per_trade_pct": 0.5,
+  "engine_params": {"rr": 9, "sl_pips": 30, "be_trigger": 3, "be_plus": 5, "version": "B", "sl_box_mult": 1.0}
+}
