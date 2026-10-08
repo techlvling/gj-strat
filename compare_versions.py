@@ -12,6 +12,7 @@ import os
 import numpy as np
 import pandas as pd
 
+from gjstrat.bias import weekly_bias
 from gjstrat.accounting import account, equity_curve, stats
 from gjstrat.data import load_market
 from gjstrat.engine import Params, run, trading_days
@@ -23,6 +24,7 @@ VERSIONS = {
     "B (breakout, range re-entry)": Params(**BASE, version="B"),
     "C (fade, stop expires 11:00)": Params(**BASE, version="C"),
     "C (fade, no 11:00 expiry)": Params(**BASE, version="C", fade_expiry_11=False),
+    "W (weekly-breakout bias)": Params(**BASE, version="W"),
 }
 COUNTS = [("initial_expired", "Neither side broke by 11:00"),
           ("fade_cancel_tp", "C: virtual breakout hit TP → reversal cancelled"),
@@ -31,6 +33,9 @@ COUNTS = [("initial_expired", "Neither side broke by 11:00"),
           ("fade_cancel_open", "C: virtual breakout still open at data end"),
           ("fade_filled", "C: reversal trades opened"),
           ("fade_same_bar", "C: reversal filled on the bar that broke the range"),
+          ("w_buy_days", "W: buy-only days"),
+          ("w_sell_days", "W: sell-only days"),
+          ("w_no_bias", "W: no bias → no trade"),
           ("reentry_skipped_time", "Re-entry skipped: wait reaches 11:00"),
           ("reentry_skipped_invalid", "Re-entry skipped: invalid stop"),
           ("reentry_expired", "Re-entry orders expired"),
@@ -52,10 +57,11 @@ def main():
     days = [d for d in days if d.date() not in skipped]
     is_days, oos_days = split_days(days)
     is_set = set(is_days)
+    bias = weekly_bias(m, days)
 
     res = {}
     for name, p in VERSIONS.items():
-        trades, cnt = run(m, p, days)
+        trades, cnt = run(m, p, days, bias=bias)
         acct = lambda ts: account(ts, m, START_BAL, commission=args.commission)
         log = acct(trades)
         res[name] = dict(
@@ -65,10 +71,10 @@ def main():
         clean_log(log).to_csv(f"{out}/trade_logs/base_{p.label}.csv", index=False)
 
     plot_equity({n: equity_curve(r["log"]) for n, r in res.items()}, f"{out}/equity_versions.png",
-                "Base settings (RR 4, SL 30+spread, BE 3R+5): A vs B vs C, closed balance",
+                "Base settings (RR 4, SL 30+spread, BE 3R+5): all versions, closed balance",
                 split=oos_days[0])
 
-    rep = ["# Version comparison — breakout (A, B) vs fade (C)\n",
+    rep = ["# Version comparison — breakout (A, B), fade (C), weekly bias (W)\n",
            f"Base settings RR 4, SL 30 pips + spread, BE 3R → +5 pips. {len(days)} days "
            f"{days[0].date()} → {days[-1].date()}; in-sample to {is_days[-1].date()}, "
            f"out-of-sample from {oos_days[0].date()}.\n",
@@ -78,6 +84,10 @@ def main():
            "out, and is cancelled if the virtual trade hits TP or BE first. The real trade then "
            "follows the usual rules: SL pips + spread from its own entry, RR × that for TP, BE, "
            "and the Version A 6-minute re-entry if it is stopped before 11:00, max 2 real trades.\n",
+           "**Version W:** bias from last week's high/low and daily closes (17:00 New York). "
+           "The latest daily close of the current week above last week's high means buy stop only; "
+           "below last week's low means sell stop only; inside means no trade. Monday never has a "
+           "bias. One trade a day, no re-entry.\n",
            "## Full period\n", stat_table({n: r["all"] for n, r in res.items()}),
            "\n## In-sample\n", stat_table({n: r["is_"] for n, r in res.items()}),
            "\n## Out-of-sample\n", stat_table({n: r["oos"] for n, r in res.items()}),

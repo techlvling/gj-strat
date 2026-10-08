@@ -26,7 +26,15 @@ import requests
 BASE_URL = "https://datafeed.dukascopy.com/datafeed"
 CANDLE_DTYPE = np.dtype([("t", ">i4"), ("o", ">i4"), ("c", ">i4"),
                          ("l", ">i4"), ("h", ">i4"), ("v", ">f4")])
-PRICE_SCALE = {"GBPJPY": 1000.0, "USDJPY": 1000.0}
+MAJORS = ["EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD"]
+MINORS = ["EURGBP", "EURJPY", "GBPJPY", "EURCHF", "EURAUD", "EURCAD", "EURNZD", "GBPCHF",
+          "GBPAUD", "GBPCAD", "GBPNZD", "AUDJPY", "AUDNZD", "AUDCAD", "AUDCHF", "CADJPY",
+          "CHFJPY", "NZDJPY", "NZDCAD", "NZDCHF", "CADCHF"]
+
+
+def price_scale(sym: str) -> float:
+    """Dukascopy stores prices as integers: 3 decimals for JPY pairs, 5 for the rest."""
+    return 1000.0 if sym.endswith("JPY") else 100000.0
 
 
 @dataclass
@@ -115,7 +123,7 @@ def load_side(sym: str, side: str, start: date, end: date, raw_dir: str) -> pd.D
     frames = []
     d = start
     while d <= end:
-        df = _decode(os.path.join(raw_dir, f"{sym}_{d:%Y%m%d}_{side}.bi5"), PRICE_SCALE[sym], d)
+        df = _decode(os.path.join(raw_dir, f"{sym}_{d:%Y%m%d}_{side}.bi5"), price_scale(sym), d)
         if df is not None:
             frames.append(df)
         d += timedelta(days=1)

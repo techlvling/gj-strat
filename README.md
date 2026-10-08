@@ -17,6 +17,13 @@ By default the stop expires at 11:00 IST like every other order
 (`Params(fade_expiry_11=False)` keeps it alive as long as the virtual trade). The real trade
 then follows the normal rules, including the Version A re-entry.
 
+Version W ("weekly bias", `gjstrat/bias.py`): daily candles close at 17:00 New York. The latest
+daily close of the current week above last week's high means buy stop only; below last week's
+low means sell stop only; inside last week's range (and every Monday) means no trade. One trade
+a day, no re-entry.
+
+`python fetch_pairs.py` downloads the 7 majors and 21 minors (bid + ask) into `data/raw`.
+
 Options: `--end YYYY-MM-DD` (last UTC day to download), `--commission 7` (USD per lot round
 turn), `--max-missing N` (tick-less minutes tolerated in the range window, default 0),
 `--out DIR`.

@@ -269,3 +269,56 @@ def test_fade_reversal_stopped_before_11_gets_reentry():
     trades, c = go(m, version="C", be_trigger=None)
     assert [(t.side, t.num, t.reason) for t in trades][:2] == [("BUY", 1, "SL"), ("SELL", 2, trades[1].reason)]
     assert trades[1].entry == pytest.approx(189.75)
+
+
+# ----------------------------------------------------------------- Version W (weekly bias)
+from gjstrat.bias import weekly_bias
+
+
+def weeks_market():
+    """Flat 190.00 market, Mon 2024-01-01 .. Sat 2024-01-20, every minute live."""
+    t0 = pd.Timestamp("2024-01-01")
+    n = 20 * 1440
+    a = np.full(n, 190.0)
+    return Market(t0=t0, bo=a.copy(), bh=a.copy(), bl=a.copy(), bc=a.copy(), ao=a + SPREAD,
+                  ah=a + SPREAD, al=a + SPREAD, ac=a + SPREAD, vol=np.ones(n),
+                  usdjpy=np.full(n, 150.0))
+
+
+def daily_close(m, ny_date, price):
+    """Set the last minute before 17:00 New York (22:00 UTC in January) of a day."""
+    i = m.idx(pd.Timestamp(ny_date) + pd.Timedelta(hours=21, minutes=59))
+    m.bc[i] = price
+    m.bh[i], m.bl[i] = max(m.bo[i], price), min(m.bo[i], price)
+
+
+def test_weekly_bias_rules():
+    m = weeks_market()
+    i = m.idx(pd.Timestamp("2024-01-03 10:00"))
+    m.bh[i] = 191.0                                   # week 1 high 191
+    i = m.idx(pd.Timestamp("2024-01-04 10:00"))
+    m.bl[i] = 189.0                                   # week 1 low 189
+    daily_close(m, "2024-01-09", 191.5)               # Tue close above last week's high
+    daily_close(m, "2024-01-11", 188.5)               # Thu close below last week's low
+    days = [pd.Timestamp(f"2024-01-{d:02d}") for d in (3, 8, 9, 10, 11, 12)]
+    b = weekly_bias(m, days)
+    assert b[pd.Timestamp("2024-01-03")] is None      # no previous week
+    assert b[pd.Timestamp("2024-01-08")] is None      # Monday: no daily close of this week yet
+    assert b[pd.Timestamp("2024-01-09")] is None      # Mon close 190 is inside 189-191
+    assert b[pd.Timestamp("2024-01-10")] == "BUY"     # Tue close 191.5 > 191
+    assert b[pd.Timestamp("2024-01-11")] is None      # Wed close back inside -> bias off
+    assert b[pd.Timestamp("2024-01-12")] == "SELL"    # Thu close 188.5 < 189: latest close wins
+
+
+def test_version_w_trades_one_side_once():
+    m = with_range(flat_market())
+    bar(m, "06:10", 190.0, 190.0, 189.79, 189.85)     # low breaks -> ignored on a BUY day
+    bar(m, "06:30", 190.0, 190.19, 190.0, 190.15)     # buy stop 190.20 fills (ask high 190.21)
+    bar(m, "07:00", 189.95, 189.95, 189.80, 189.86)   # buy SL 189.88 -> no re-entry in W
+    bar(m, "07:30", 189.85, 189.85, 189.60, 189.65)
+    trades, c = run(m, Params(version="W"), [DAY], bias={DAY: "BUY"})
+    assert [(t.side, t.reason) for t in trades] == [("BUY", "SL")] and c.w_buy_days == 1
+    trades, c = run(m, Params(version="W"), [DAY], bias={DAY: None})
+    assert trades == [] and c.w_no_bias == 1
+    trades, c = run(m, Params(version="W"), [DAY], bias={DAY: "SELL"})
+    assert [t.side for t in trades] == ["SELL"] and trades[0].entry_i == i_of(m, "06:10")

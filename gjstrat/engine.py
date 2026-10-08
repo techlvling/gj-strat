@@ -42,6 +42,7 @@ class Params:
     be_plus: float = 5.0               # pips beyond entry for the moved stop
     version: str = "A"                 # A: re-entry at 6-bar extreme, B: at original range level,
                                        # C: fade - first break is virtual, trade its SL (A re-entry)
+                                       # W: weekly-breakout bias - one side only, one trade, no re-entry
     reentry_wait: int = 6
     fade_expiry_11: bool = True        # C: reversal stop expires at 11:00 (False: lives with virtual trade)
 
@@ -101,6 +102,9 @@ class Counters:
     fade_expired: int = 0               # C: virtual SL hit at/after 11:00 -> reversal stop expired
     fade_filled: int = 0                # C: reversal trades opened
     fade_same_bar: int = 0              # C: reversal filled on the very bar that broke the range
+    w_no_bias: int = 0                  # W: no weekly bias -> no trade
+    w_buy_days: int = 0                 # W: buy stop only
+    w_sell_days: int = 0                # W: sell stop only
     skipped_dates: list = field(default_factory=list)
 
     def as_dict(self) -> dict:
@@ -219,7 +223,10 @@ def trading_days(m: Market, start: str | None = None, end: str | None = None) ->
 
 
 def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
-        max_missing: int = 0) -> tuple[list[Trade], Counters]:
+        max_missing: int = 0, bias: dict | None = None) -> tuple[list[Trade], Counters]:
+    """bias: {IST day: 'BUY' | 'SELL' | None}, required for Version W (see gjstrat.bias)."""
+    if p.version == "W" and bias is None:
+        raise ValueError("Version W needs a bias map (gjstrat.bias.weekly_bias)")
     days = trading_days(m) if days is None else days
     c = Counters()
     trades: list[Trade] = []
@@ -245,7 +252,19 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
         lo = float(m.bl[rs:rs + 60].min())
         range_pips = (hi - lo) / PIP
 
-        hit = find_entry(m, place, expiry, hi, lo)
+        buy_lvl, sell_lvl = hi, lo
+        if p.version == "W":
+            b = bias.get(day)
+            if b is None:
+                c.w_no_bias += 1
+                continue
+            if b == "BUY":
+                sell_lvl = None
+                c.w_buy_days += 1
+            else:
+                buy_lvl = None
+                c.w_sell_days += 1
+        hit = find_entry(m, place, expiry, buy_lvl, sell_lvl)
         if hit is None:
             c.initial_expired += 1
             continue
@@ -279,7 +298,7 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
             xi, xp, reason, be_moved = manage(m, side, ei, px, risk, p)
             trades.append(Trade(day, side, num, ei, px, xi, xp, reason, risk, spread,
                                 range_pips, gap, be_moved))
-            if reason not in ("SL", "BE") or num == 2:
+            if reason not in ("SL", "BE") or num == 2 or p.version == "W":
                 break
             if xi >= expiry:
                 c.exit_after_11_no_reentry += 1
