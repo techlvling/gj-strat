@@ -449,7 +449,9 @@ def main():
     first = next(iter(top_detail.values()))
     w(f"\n### Breakdowns — #1 `{first['p'].label}` (full period)\n")
     w(breakdowns(first["log"]))
-    w("\n## 4. Verdict\n\n<!-- VERDICT -->\n")
+    w("\n## 4. Verdict\n")
+    vpath = f"{out}/verdict.md"      # hand-written after reading the numbers; kept across re-runs
+    w(open(vpath).read() if os.path.exists(vpath) else "_Not written yet._\n")
     with open(f"{out}/REPORT.md", "w") as f:
         f.write("\n".join(rep))
 

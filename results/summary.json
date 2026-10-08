@@ -1,0 +1,154 @@
+{
+ "n_combos": 170,
+ "exp_max_t": 3.204933208992119,
+ "best_be": "1.5R+5",
+ "split": "2025-08-29",
+ "base": {
+  "A": {
+   "all": {
+    "trades": 847,
+    "win_rate": 26.210153482880756,
+    "avg_R": 0.07942880755608027,
+    "profit_factor": 1.1071692265490753,
+    "expectancy_R": 0.07942880755608017,
+    "expectancy_pct": 0.07705149935168805,
+    "sqn": 1.156634901477492,
+    "max_dd_pct": 51.177056436945946,
+    "longest_losing_streak": 22,
+    "net_return_pct": 63.286,
+    "cagr_pct": 19.422410113616053
+   },
+   "is_": {
+    "trades": 514,
+    "win_rate": 25.09727626459144,
+    "avg_R": 0.01775525291828793,
+    "profit_factor": 1.0235394377535314,
+    "expectancy_R": 0.017755252918287834,
+    "expectancy_pct": 0.016232510501556167,
+    "sqn": 0.20566564386750252,
+    "max_dd_pct": 47.58532909548553,
+    "longest_losing_streak": 22,
+    "net_return_pct": -1.0907,
+    "cagr_pct": -0.6609955809176449
+   },
+   "oos": {
+    "trades": 333,
+    "win_rate": 27.927927927927925,
+    "avg_R": 0.1746246246246246,
+    "profit_factor": 1.2422327233706467,
+    "expectancy_R": 0.1746246246246247,
+    "expectancy_pct": 0.17160995290115152,
+    "sqn": 1.5468053468065945,
+    "max_dd_pct": 21.057755636392354,
+    "longest_losing_streak": 12,
+    "net_return_pct": 65.44619999999999,
+    "cagr_pct": 57.64643205165652
+   }
+  },
+  "B": {
+   "all": {
+    "trades": 770,
+    "win_rate": 25.844155844155843,
+    "avg_R": 0.06840376623376625,
+    "profit_factor": 1.0918541241221515,
+    "expectancy_R": 0.0684037662337661,
+    "expectancy_pct": 0.0657124393940983,
+    "sqn": 0.9524675419675839,
+    "max_dd_pct": 52.37411156813544,
+    "longest_losing_streak": 20,
+    "net_return_pct": 43.25319999999999,
+    "cagr_pct": 13.896015335750644
+   },
+   "is_": {
+    "trades": 468,
+    "win_rate": 24.57264957264957,
+    "avg_R": 0.009278846153846157,
+    "profit_factor": 1.0122083799669552,
+    "expectancy_R": 0.00927884615384622,
+    "expectancy_pct": 0.0063248878282826295,
+    "sqn": 0.10255193418122205,
+    "max_dd_pct": 47.43859160094523,
+    "longest_losing_streak": 20,
+    "net_return_pct": -5.45770000000001,
+    "cagr_pct": -3.3369066358005406
+   },
+   "oos": {
+    "trades": 302,
+    "win_rate": 27.81456953642384,
+    "avg_R": 0.16002781456953644,
+    "profit_factor": 1.221974300101001,
+    "expectancy_R": 0.1600278145695364,
+    "expectancy_pct": 0.1568896618591175,
+    "sqn": 1.3588833492363317,
+    "max_dd_pct": 22.967326044716394,
+    "longest_losing_streak": 10,
+    "net_return_pct": 51.13620000000001,
+    "cagr_pct": 45.26608028054926
+   }
+  }
+ },
+ "counts": {
+  "A": {
+   "days_total": 707,
+   "skipped_no_data": 0,
+   "skipped_incomplete": 0,
+   "traded_days": 707,
+   "initial_expired": 2,
+   "open_fill_0600": 58,
+   "reentry_considered": 228,
+   "reentry_skipped_time": 3,
+   "reentry_skipped_invalid": 18,
+   "reentry_expired": 65,
+   "reentry_filled": 142,
+   "exit_after_11_no_reentry": 334
+  },
+  "B": {
+   "days_total": 707,
+   "skipped_no_data": 0,
+   "skipped_incomplete": 0,
+   "traded_days": 707,
+   "initial_expired": 2,
+   "open_fill_0600": 58,
+   "reentry_considered": 228,
+   "reentry_skipped_time": 3,
+   "reentry_skipped_invalid": 120,
+   "reentry_expired": 40,
+   "reentry_filled": 65,
+   "exit_after_11_no_reentry": 334
+  }
+ },
+ "top": [
+  {
+   "label": "RR2_SL40_BE1.5R+0_A",
+   "flags": [
+    "NOISE? (weak neighbours)",
+    "DEGRADED OOS (<50% of IS avg R)"
+   ]
+  },
+  {
+   "label": "RR2_SL40_BE1.5R+5_A",
+   "flags": [
+    "NOISE? (weak neighbours)",
+    "OVERFIT (fails OOS)"
+   ]
+  },
+  {
+   "label": "RR4_SL40_BE1.5R+0_A",
+   "flags": [
+    "DEGRADED OOS (<50% of IS avg R)"
+   ]
+  },
+  {
+   "label": "RR3_SL40_BE1.5R+0_A",
+   "flags": [
+    "\u2014"
+   ]
+  },
+  {
+   "label": "RR2_SL40_BE1R+5_A",
+   "flags": [
+    "DEGRADED OOS (<50% of IS avg R)"
+   ]
+  }
+ ]
+}
