@@ -90,14 +90,23 @@ def main():
     ap.add_argument("--end", default="2026-10-07")
     ap.add_argument("--out", default="results/minors_grid")
     ap.add_argument("--sl-box", nargs="*", type=float, default=[1.0], help="SL multiples of the box")
+    ap.add_argument("--aggregate", action="store_true",
+                    help="combine <out>/pairs/<PAIR>/grid.csv + info.csv instead of running")
     args = ap.parse_args()
     SL_MULTS[:] = args.sl_box
     os.makedirs(args.out, exist_ok=True)
-    with Pool(min(os.cpu_count(), len(args.pairs))) as pool:
-        out = pool.map(evaluate_pair, [(s, args.end) for s in args.pairs])
-    res = pd.DataFrame([r for rows, _ in out for r in rows])
-    info = pd.DataFrame([i for _, i in out]).set_index("pair")
+    if args.aggregate:
+        found = [p for p in args.pairs if os.path.exists(f"{args.out}/pairs/{p}/grid.csv")]
+        args.pairs = found
+        res = pd.concat([pd.read_csv(f"{args.out}/pairs/{p}/grid.csv") for p in found])
+        info = pd.concat([pd.read_csv(f"{args.out}/pairs/{p}/info.csv") for p in found]).set_index("pair")
+    else:
+        with Pool(min(os.cpu_count(), len(args.pairs))) as pool:
+            out = pool.map(evaluate_pair, [(s, args.end) for s in args.pairs])
+        res = pd.DataFrame([r for rows, _ in out for r in rows])
+        info = pd.DataFrame([i for _, i in out]).set_index("pair")
     res.to_csv(f"{args.out}/grid.csv", index=False)
+    info.reset_index().to_csv(f"{args.out}/info.csv", index=False)
 
     des = res[res.period == "design"].set_index(["pair", "setup"])
     chk = res[res.period == "check"].set_index(["pair", "setup"])
@@ -111,6 +120,13 @@ def main():
                       "design t": d.loc[best, "t"], "check avg R": c["avg_R"], "check t": c["t"],
                       "check trades": c["trades"], "held up?": "yes" if c["avg_R"] > 0 else "no"})
     picks = pd.DataFrame(picks).set_index("pair")
+    both_pos = (des["avg_R"] > 0) & (chk["avg_R"].reindex(des.index) > 0)
+    for sym in args.pairs:
+        pk = picks.loc[sym]
+        print(f"SUMMARY {sym}: best design pick {pk['design pick']} -> design {pk['design avg R']:+.3f}R, "
+              f"check {pk['check avg R']:+.3f}R | setups positive in BOTH periods: "
+              f"{int(both_pos.loc[sym].sum())}/{len(des.loc[sym])} | box {info.loc[sym, 'median_box_pips']:.1f} pips, "
+              f"spread {info.loc[sym, 'median_spread_pips']:.1f}", flush=True)
     # every setup averaged over all pairs (equal weight per pair)
     pooled = res.groupby(["period", "setup", "rr", "be", "sl_mult"])["avg_R"].mean().unstack("period")
     pooled["pairs positive in check"] = chk.groupby("setup")["avg_R"].apply(lambda x: int((x > 0).sum()))
