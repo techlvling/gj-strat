@@ -424,3 +424,12 @@ def test_levels_before_stop():
     bar(m, "09:00", 190.0, 190.0, 189.80, 189.85)     # stop before +3R (191.16)
     t = run(m, Params(be_trigger=None), [DAY])[0][0]
     assert levels_before_stop(m, t) == 2
+
+
+def test_swap_for_a_cross_uses_usd_notional():
+    idx = pd.date_range("2023-01-01", "2025-01-01", freq="D")
+    sw = SwapModel({"EUR": pd.Series(4.0, idx), "GBP": pd.Series(5.0, idx)}, 0.0)
+    a, b = pd.Timestamp("2024-01-09 10:00"), pd.Timestamp("2024-01-10 10:00")
+    # EURGBP 0.86, GBPUSD 1.27 -> quote_per_usd = 1/1.27; notional = 100k EUR = 100k*0.86*1.27 USD
+    usd, n = sw.swap_usd("EURGBP", "BUY", 1.0, a, b, 0.86, 1 / 1.27)
+    assert n == 1 and usd == pytest.approx(100_000 * 0.86 * 1.27 * (4.0 - 5.0) / 100 / 365)

@@ -6,9 +6,9 @@
         rate = r_base - r_quote - markup     (short: r_quote - r_base - markup)
     markup is the broker's spread on the differential, % per year (both sides pay it).
   * interest = notional in USD x rate / 100 x days / 365, booked when the trade closes.
-Rates: rates/DFF.csv (USD effective Fed Funds, daily) and rates/IRSTCI01JPM156N.csv (Japan
-overnight call rate, monthly), both from FRED, forward-filled to every day.
-Only pairs with a USD leg are supported (notional in USD needs no third rate).
+Rates (FRED, forward-filled to every day): USD effective Fed Funds (daily); overnight/call rates
+(monthly) for JPY, EUR, GBP, AUD, CAD; 3-month interbank (monthly) for CHF and NZD, whose
+overnight series stop in 2024. Notional in USD = lots x 100k x price / quote_per_usd.
 """
 from __future__ import annotations
 
@@ -18,7 +18,9 @@ import numpy as np
 import pandas as pd
 
 NY = "America/New_York"
-FRED_FILES = {"USD": "DFF.csv", "JPY": "IRSTCI01JPM156N.csv"}
+FRED_FILES = {"USD": "DFF.csv", "JPY": "IRSTCI01JPM156N.csv", "EUR": "IRSTCI01EZM156N.csv",
+              "GBP": "IRSTCI01GBM156N.csv", "AUD": "IRSTCI01AUM156N.csv", "CAD": "IRSTCI01CAM156N.csv",
+              "CHF": "IR3TIB01CHM156N.csv", "NZD": "IR3TIB01NZM156N.csv"}
 
 
 class SwapModel:
@@ -51,7 +53,8 @@ class SwapModel:
                              "days": np.where(days[keep].dayofweek == 2, 3, 1)})
 
     def swap_usd(self, sym: str, side: str, lots: float, entry_utc: pd.Timestamp,
-                 exit_utc: pd.Timestamp, price: float) -> tuple[float, int]:
+                 exit_utc: pd.Timestamp, price: float,
+                 quote_per_usd: float | None = None) -> tuple[float, int]:
         """(swap in USD, rollovers held). Positive = paid to the trader."""
         r = self.rollovers(entry_utc, exit_utc)
         if r.empty:
@@ -61,8 +64,10 @@ class SwapModel:
             notional_usd = lots * 100_000
         elif quote == "USD":
             notional_usd = lots * 100_000 * price
+        elif quote_per_usd is not None:
+            notional_usd = lots * 100_000 * price / quote_per_usd
         else:
-            raise NotImplementedError(f"swap for {sym}: needs a USD leg")
+            raise ValueError(f"swap for {sym}: pass quote_per_usd for a cross")
         idx = pd.DatetimeIndex(r["ny_date"])
         diff = self.rate(base, idx) - self.rate(quote, idx)
         rate = (diff if side == "BUY" else -diff) - self.markup

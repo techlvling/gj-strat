@@ -187,7 +187,8 @@ def pip_size(sym: str) -> float:
 
 def build_market(sym: str, start: date, end: date, raw_dir: str, cache: str) -> Market:
     """Minute grid for one pair, with the quote->USD conversion needed for pip value:
-    XXXUSD -> 1, USDXXX -> the pair's own price, XXXJPY cross -> USDJPY."""
+    XXXUSD -> 1, USDXXX -> the pair's own price, cross -> USD<quote> (JPY, CHF, CAD) or
+    1 / <quote>USD (EUR, GBP, AUD, NZD)."""
     if os.path.exists(cache):
         return load_market(cache)
     # one extra UTC day before start: the IST 05:00 range of `start` begins at 23:30 UTC the day before
@@ -200,9 +201,12 @@ def build_market(sym: str, start: date, end: date, raw_dir: str, cache: str) -> 
         conv = 1.0
     elif base == "USD":
         conv = bid["c"]
-    else:
+    elif f"USD{quote}" in MAJORS:
         download(f"USD{quote}", dl_start, end, raw_dir, sides=("BID",))
         conv = load_side(f"USD{quote}", "BID", dl_start, end, raw_dir)["c"]
+    else:
+        download(f"{quote}USD", dl_start, end, raw_dir, sides=("BID",))
+        conv = 1.0 / load_side(f"{quote}USD", "BID", dl_start, end, raw_dir)["c"]
     # trim the trailing never-traded minutes (e.g. today's partial / empty file)
     last_live = bid.index[bid["v"] > 0][-1]
     bid, ask = bid.loc[:last_live], ask.loc[:last_live]

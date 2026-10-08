@@ -57,7 +57,8 @@ def account(trades: list[Trade], m: Market, start_balance: float = 10_000.0,
             comm += slippage_pips * stop_fills * lots[k] * LOT * m.pip / m.quote_per_usd[t.exit_i]
             if swap is not None:
                 swap_usd[k], nights[k] = swap.swap_usd(sym, t.side, lots[k], m.ts(t.entry_i),
-                                                       m.ts(t.exit_i), t.entry)
+                                                       m.ts(t.exit_i), t.entry,
+                                                       m.quote_per_usd[t.entry_i])
             pnl[k] = gross - comm + swap_usd[k]
             risk_usd = lots[k] * (t.risk / m.pip) * LOT * m.pip / m.quote_per_usd[t.entry_i]
             rnet[k] = t.r + (swap_usd[k] - comm) / risk_usd
