@@ -433,3 +433,43 @@ def test_swap_for_a_cross_uses_usd_notional():
     # EURGBP 0.86, GBPUSD 1.27 -> quote_per_usd = 1/1.27; notional = 100k EUR = 100k*0.86*1.27 USD
     usd, n = sw.swap_usd("EURGBP", "BUY", 1.0, a, b, 0.86, 1 / 1.27)
     assert n == 1 and usd == pytest.approx(100_000 * 0.86 * 1.27 * (4.0 - 5.0) / 100 / 365)
+
+
+# ----------------------------------------------------------------- general pattern simulator
+from gjstrat.patterns import Signal, is_gotobi, simulate
+
+
+def sig(m, side, start, kind="market", level=None, sl=0.20, tp=0.40, exit_hhmm="10:00"):
+    return Signal(DAY, side, i_of(m, start), kind, level, i_of(m, "09:00"), sl, tp,
+                  i_of(m, exit_hhmm))
+
+
+def test_pattern_market_buy_hits_tp():
+    m = flat_market()
+    bar(m, "07:30", 190.0, 190.45, 190.0, 190.4)       # buy @ ask open 190.02 -> TP 190.42 (bid)
+    t = simulate(m, sig(m, "BUY", "07:00"))
+    assert (t.entry, t.reason, t.exit) == (pytest.approx(190.02), "TP", pytest.approx(190.42))
+
+
+def test_pattern_sl_first_and_time_exit():
+    m = flat_market()
+    bar(m, "07:30", 190.0, 190.50, 189.80, 190.0)      # TP and SL both inside -> SL
+    assert simulate(m, sig(m, "BUY", "07:00")).reason == "SL"
+    m = flat_market()
+    t = simulate(m, sig(m, "SELL", "07:00"))            # nothing happens -> exit 10:00 at ask
+    assert t.reason == "TIME" and t.exit_i == i_of(m, "10:00") and t.exit == pytest.approx(190.02)
+
+
+def test_pattern_limit_fills_at_level():
+    m = flat_market()
+    bar(m, "07:30", 190.0, 190.0, 189.85, 189.9)       # ask low 189.87 <= limit 189.90
+    t = simulate(m, sig(m, "BUY", "07:00", kind="limit", level=189.90))
+    assert t.entry == pytest.approx(189.90) and t.entry_i == i_of(m, "07:30")
+    assert simulate(m, sig(m, "BUY", "07:00", kind="limit", level=189.80)) is None
+
+
+def test_gotobi_days():
+    assert is_gotobi(pd.Timestamp("2024-01-05"))       # Friday the 5th
+    assert is_gotobi(pd.Timestamp("2024-02-09"))       # Sat 10th -> Fri 9th
+    assert is_gotobi(pd.Timestamp("2024-01-31"))       # month end
+    assert not is_gotobi(pd.Timestamp("2024-01-08"))

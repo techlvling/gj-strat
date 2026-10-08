@@ -42,7 +42,12 @@ def challenge(ev, R, ny_day, ist_day, start_trade, risk, targets=(0.08, 0.06), m
         if k < start_trade:
             continue
         if kind == 1:                                   # entry
-            pct = risk(bal, 1 - max_dd, 1 + targets[phase]) if callable(risk) else risk
+            if callable(risk):
+                pct = risk(bal, 1 - max_dd, 1 + targets[phase])
+            elif isinstance(risk, np.ndarray):
+                pct = risk[k]                           # per-trade risk (portfolios)
+            else:
+                pct = risk
             open_[k] = pct / 100 * bal
             days.add(ist_day[k])
             continue
