@@ -29,7 +29,7 @@ import pandas as pd
 
 from .data import Market
 
-PIP = 0.01
+PIP = 0.01          # JPY-pair pip; Market.pip holds the actual pip of each pair
 EPS = 1e-7          # price-comparison tolerance (data has 0.001 resolution)
 IST = pd.Timedelta(hours=5, minutes=30)
 
@@ -168,7 +168,7 @@ def manage(m: Market, side: str, ei: int, entry: float, risk: float,
         lo, hi, op = m.bl, m.bh, m.bo           # long exits on bid
         sl, tp = entry - risk, entry + p.rr * risk
         be_lvl = None if p.be_trigger is None else entry + p.be_trigger * risk
-        be_stop = entry + p.be_plus * PIP
+        be_stop = entry + p.be_plus * m.pip
         adverse = lambda s, lvl: lo[s] <= lvl + EPS
         favour = lambda s, lvl: hi[s] >= lvl - EPS
         gapped = lambda i, lvl: op[i] < lvl - EPS
@@ -176,7 +176,7 @@ def manage(m: Market, side: str, ei: int, entry: float, risk: float,
         lo, hi, op = m.al, m.ah, m.ao           # short exits on ask
         sl, tp = entry + risk, entry - p.rr * risk
         be_lvl = None if p.be_trigger is None else entry - p.be_trigger * risk
-        be_stop = entry - p.be_plus * PIP
+        be_stop = entry - p.be_plus * m.pip
         adverse = lambda s, lvl: hi[s] >= lvl - EPS
         favour = lambda s, lvl: lo[s] <= lvl + EPS
         gapped = lambda i, lvl: op[i] > lvl + EPS
@@ -250,7 +250,7 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
         c.traded_days += 1
         hi = float(m.bh[rs:rs + 60].max())
         lo = float(m.bl[rs:rs + 60].min())
-        range_pips = (hi - lo) / PIP
+        range_pips = (hi - lo) / m.pip
 
         buy_lvl, sell_lvl = hi, lo
         if p.version == "W":
@@ -273,7 +273,7 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
             c.open_fill_0600 += 1
         if p.version == "C":
             # the breakout is virtual: its stop-loss price is where the real, opposite trade starts
-            vrisk = p.sl_pips * PIP + max(m.ao[ei] - m.bo[ei], 0.0)
+            vrisk = p.sl_pips * m.pip + max(m.ao[ei] - m.bo[ei], 0.0)
             vxi, vxp, vreason, _ = manage(m, side, ei, px, vrisk, p)
             if vreason != "SL":
                 if vreason == "TP":
@@ -294,7 +294,7 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
         num = 1
         while True:
             spread = max(m.ao[ei] - m.bo[ei], 0.0)
-            risk = p.sl_pips * PIP + spread
+            risk = p.sl_pips * m.pip + spread
             xi, xp, reason, be_moved = manage(m, side, ei, px, risk, p)
             trades.append(Trade(day, side, num, ei, px, xi, xp, reason, risk, spread,
                                 range_pips, gap, be_moved))

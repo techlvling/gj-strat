@@ -17,7 +17,7 @@ def flat_market(price=190.0):
     a = np.full(n, price)
     return Market(t0=t0, bo=a.copy(), bh=a.copy(), bl=a.copy(), bc=a.copy(),
                   ao=a + SPREAD, ah=a + SPREAD, al=a + SPREAD, ac=a + SPREAD,
-                  vol=np.ones(n), usdjpy=np.full(n, 150.0))
+                  vol=np.ones(n), quote_per_usd=np.full(n, 150.0))
 
 
 def i_of(m, hhmm, day=DAY):
@@ -282,7 +282,7 @@ def weeks_market():
     a = np.full(n, 190.0)
     return Market(t0=t0, bo=a.copy(), bh=a.copy(), bl=a.copy(), bc=a.copy(), ao=a + SPREAD,
                   ah=a + SPREAD, al=a + SPREAD, ac=a + SPREAD, vol=np.ones(n),
-                  usdjpy=np.full(n, 150.0))
+                  quote_per_usd=np.full(n, 150.0))
 
 
 def daily_close(m, ny_date, price):

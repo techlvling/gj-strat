@@ -8,6 +8,7 @@ python -m pytest -q                 # rule-by-rule engine tests (hand-built cand
 python run_backtest.py --synthetic  # random-walk sanity run (should show no edge)
 python run_backtest.py              # downloads Dukascopy data into data/ (cached), full run
 python compare_versions.py          # base settings: A vs B vs C (fade) -> results/version_comparison/
+python run_majors.py                # A and B on the 7 majors (+ GBPJPY) -> results/majors/
 ```
 
 Version C ("fade"): the first break of the box is not traded. It is followed virtually with
@@ -23,6 +24,10 @@ low means sell stop only; inside last week's range (and every Monday) means no t
 a day, no re-entry.
 
 `python fetch_pairs.py` downloads the 7 majors and 21 minors (bid + ask) into `data/raw`.
+`--save` packs each finished pair into `datastore/<PAIR>.tar` (committed) and unpacks those on
+start, so a new container only downloads what is missing. Pip size is 0.01 for JPY pairs and
+0.0001 otherwise; pip value is converted to USD per pair (XXXUSD: 1, USDXXX: its own price,
+JPY crosses: USDJPY).
 
 Options: `--end YYYY-MM-DD` (last UTC day to download), `--commission 7` (USD per lot round
 turn), `--max-missing N` (tick-less minutes tolerated in the range window, default 0),

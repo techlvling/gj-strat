@@ -50,8 +50,9 @@ class Market:
     al: np.ndarray
     ac: np.ndarray
     vol: np.ndarray          # bid tick volume; 0 = no real trading that minute
-    usdjpy: np.ndarray       # USDJPY bid close, forward-filled
+    quote_per_usd: np.ndarray  # units of the quote currency per 1 USD (1 for XXXUSD), ffilled
     has_ask: bool = True
+    pip: float = 0.01        # 0.01 for JPY pairs, 0.0001 otherwise
 
     @property
     def n(self) -> int:
@@ -133,8 +134,8 @@ def load_side(sym: str, side: str, start: date, end: date, raw_dir: str) -> pd.D
 
 
 # --------------------------------------------------------------------------- grid
-def to_grid(bid: pd.DataFrame, ask: pd.DataFrame | None, usdjpy: pd.Series | None,
-            spread_pips: float = 2.5, usdjpy_const: float = 150.0) -> Market:
+def to_grid(bid: pd.DataFrame, ask: pd.DataFrame | None, conv: pd.Series | float | None,
+            spread_pips: float = 2.5, pip: float = 0.01) -> Market:
     """Reindex onto a continuous minute grid. If ask is None, ask = bid + spread_pips."""
     t0 = bid.index[0].floor("D")
     grid = pd.date_range(t0, bid.index[-1], freq="1min")
@@ -152,47 +153,66 @@ def to_grid(bid: pd.DataFrame, ask: pd.DataFrame | None, usdjpy: pd.Series | Non
         a = fill(ask.copy())
         has_ask = True
     else:
-        a = b[["o", "h", "l", "c"]] + spread_pips * 0.01
+        a = b[["o", "h", "l", "c"]] + spread_pips * pip
         has_ask = False
-    if usdjpy is not None:
-        uj = usdjpy[~usdjpy.index.duplicated()].reindex(grid).ffill().bfill().to_numpy()
+    if isinstance(conv, pd.Series):
+        uj = conv[~conv.index.duplicated()].reindex(grid).ffill().bfill().to_numpy()
     else:
-        uj = np.full(len(grid), usdjpy_const)
+        uj = np.full(len(grid), 150.0 if conv is None else float(conv))
     f = lambda s: np.ascontiguousarray(s.to_numpy(dtype=np.float64))
     return Market(t0=t0, bo=f(b["o"]), bh=f(b["h"]), bl=f(b["l"]), bc=f(b["c"]),
                   ao=f(a["o"]), ah=f(a["h"]), al=f(a["l"]), ac=f(a["c"]),
-                  vol=f(b["v"]), usdjpy=uj.astype(np.float64), has_ask=has_ask)
+                  vol=f(b["v"]), quote_per_usd=uj.astype(np.float64), has_ask=has_ask,
+                  pip=pip)
 
 
 def save_market(m: Market, path: str) -> None:
     np.savez_compressed(path, t0=np.array(str(m.t0)), bo=m.bo, bh=m.bh, bl=m.bl, bc=m.bc,
-                        ao=m.ao, ah=m.ah, al=m.al, ac=m.ac, vol=m.vol, usdjpy=m.usdjpy,
-                        has_ask=np.array(m.has_ask))
+                        ao=m.ao, ah=m.ah, al=m.al, ac=m.ac, vol=m.vol,
+                        quote_per_usd=m.quote_per_usd, has_ask=np.array(m.has_ask),
+                        pip=np.array(m.pip))
 
 
 def load_market(path: str) -> Market:
     z = np.load(path)
     return Market(t0=pd.Timestamp(str(z["t0"])), bo=z["bo"], bh=z["bh"], bl=z["bl"], bc=z["bc"],
                   ao=z["ao"], ah=z["ah"], al=z["al"], ac=z["ac"], vol=z["vol"],
-                  usdjpy=z["usdjpy"], has_ask=bool(z["has_ask"]))
+                  quote_per_usd=z["quote_per_usd"] if "quote_per_usd" in z else z["usdjpy"],
+                  has_ask=bool(z["has_ask"]), pip=float(z["pip"]) if "pip" in z else 0.01)
 
 
-def build_dukascopy_market(start: date, end: date, raw_dir: str, cache: str) -> Market:
+def pip_size(sym: str) -> float:
+    return 0.01 if sym.endswith("JPY") else 0.0001
+
+
+def build_market(sym: str, start: date, end: date, raw_dir: str, cache: str) -> Market:
+    """Minute grid for one pair, with the quote->USD conversion needed for pip value:
+    XXXUSD -> 1, USDXXX -> the pair's own price, XXXJPY cross -> USDJPY."""
     if os.path.exists(cache):
         return load_market(cache)
     # one extra UTC day before start: the IST 05:00 range of `start` begins at 23:30 UTC the day before
     dl_start = start - timedelta(days=1)
-    download("GBPJPY", dl_start, end, raw_dir)
-    download("USDJPY", dl_start, end, raw_dir, sides=("BID",))
-    bid = load_side("GBPJPY", "BID", dl_start, end, raw_dir)
-    ask = load_side("GBPJPY", "ASK", dl_start, end, raw_dir)
-    uj = load_side("USDJPY", "BID", dl_start, end, raw_dir)["c"]
+    download(sym, dl_start, end, raw_dir)
+    bid = load_side(sym, "BID", dl_start, end, raw_dir)
+    ask = load_side(sym, "ASK", dl_start, end, raw_dir)
+    base, quote = sym[:3], sym[3:]
+    if quote == "USD":
+        conv = 1.0
+    elif base == "USD":
+        conv = bid["c"]
+    else:
+        download(f"USD{quote}", dl_start, end, raw_dir, sides=("BID",))
+        conv = load_side(f"USD{quote}", "BID", dl_start, end, raw_dir)["c"]
     # trim the trailing never-traded minutes (e.g. today's partial / empty file)
     last_live = bid.index[bid["v"] > 0][-1]
     bid, ask = bid.loc[:last_live], ask.loc[:last_live]
-    m = to_grid(bid, ask, uj)
+    m = to_grid(bid, ask, conv, pip=pip_size(sym))
     save_market(m, cache)
     return m
+
+
+def build_dukascopy_market(start: date, end: date, raw_dir: str, cache: str) -> Market:
+    return build_market("GBPJPY", start, end, raw_dir, cache)
 
 
 # --------------------------------------------------------------------------- synthetic
@@ -223,4 +243,4 @@ def synthetic_market(start: str = "2024-01-01", days: int = 400, seed: int = 7,
     spr = spread_pips * 0.01
     uj = 150 + np.cumsum(rng.normal(0, 0.003, n))
     return Market(t0=t0, bo=open_, bh=high, bl=low, bc=close, ao=open_ + spr, ah=high + spr,
-                  al=low + spr, ac=close + spr, vol=vol, usdjpy=uj, has_ask=True)
+                  al=low + spr, ac=close + spr, vol=vol, quote_per_usd=uj, has_ask=True)

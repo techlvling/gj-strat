@@ -4,8 +4,8 @@ Trade paths don't depend on account size, so the engine produces price-level tra
 this module replays them in time order against a compounding balance:
   * risk = risk_pct of the *closed* balance at entry (trades from different days can overlap)
   * lots = floor(risk_usd / (risk_pips * pip_value_per_lot) / 0.01) * 0.01, minimum 0.01
-  * pip value per 1.0 lot (100k GBP) = 1000 JPY, converted with USDJPY at entry (sizing)
-    and at exit (realised P/L)
+  * pip value per 1.0 lot (100k base) = 100,000 x pip in the quote currency, converted to USD
+    with Market.quote_per_usd at entry (sizing) and at exit (realised P/L)
   * commission is USD per lot round turn
 R per trade = price move / 1R distance, minus commission expressed in R. Stats are in R and %.
 """
@@ -15,9 +15,9 @@ import numpy as np
 import pandas as pd
 
 from .data import Market
-from .engine import IST, PIP, Trade
+from .engine import IST, Trade
 
-JPY_PER_PIP_PER_LOT = 100_000 * PIP
+LOT = 100_000
 
 
 def account(trades: list[Trade], m: Market, start_balance: float = 10_000.0,
@@ -39,15 +39,15 @@ def account(trades: list[Trade], m: Market, start_balance: float = 10_000.0,
     for bar, kind, k in ev:
         t = trades[k]
         if kind == 1:   # entry
-            pip_usd = JPY_PER_PIP_PER_LOT / m.usdjpy[t.entry_i]
-            raw = bal * risk_pct / 100 / (t.risk / PIP * pip_usd)
+            pip_usd = LOT * m.pip / m.quote_per_usd[t.entry_i]
+            raw = bal * risk_pct / 100 / (t.risk / m.pip * pip_usd)
             lots[k] = max(np.floor(raw / lot_step + 1e-9) * lot_step, lot_step)
         else:
-            pips = (t.exit - t.entry if t.side == "BUY" else t.entry - t.exit) / PIP
-            gross = lots[k] * pips * JPY_PER_PIP_PER_LOT / m.usdjpy[t.exit_i]
+            pips = (t.exit - t.entry if t.side == "BUY" else t.entry - t.exit) / m.pip
+            gross = lots[k] * pips * LOT * m.pip / m.quote_per_usd[t.exit_i]
             comm = commission * lots[k]
             pnl[k] = gross - comm
-            risk_usd = lots[k] * (t.risk / PIP) * JPY_PER_PIP_PER_LOT / m.usdjpy[t.entry_i]
+            risk_usd = lots[k] * (t.risk / m.pip) * LOT * m.pip / m.quote_per_usd[t.entry_i]
             rnet[k] = t.r - comm / risk_usd
             bal += pnl[k]
             bal_after[k] = bal
@@ -56,12 +56,12 @@ def account(trades: list[Trade], m: Market, start_balance: float = 10_000.0,
         "side": [t.side for t in trades],
         "trade_num": [t.num for t in trades],
         "entry_time_ist": [m.ts(t.entry_i) + IST for t in trades],
-        "entry_price": [round(t.entry, 3) for t in trades],
+        "entry_price": [round(t.entry, 5) for t in trades],
         "exit_time_ist": [m.ts(t.exit_i) + IST for t in trades],
-        "exit_price": [round(t.exit, 3) for t in trades],
+        "exit_price": [round(t.exit, 5) for t in trades],
         "range_pips": [round(t.range_pips, 1) for t in trades],
-        "risk_pips": [round(t.risk / PIP, 2) for t in trades],
-        "spread_pips": [round(t.spread / PIP, 2) for t in trades],
+        "risk_pips": [round(t.risk / m.pip, 2) for t in trades],
+        "spread_pips": [round(t.spread / m.pip, 2) for t in trades],
         "R": rnet.round(4),
         "exit_reason": [t.reason for t in trades],
         "lots": lots.round(2),
