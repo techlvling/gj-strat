@@ -44,6 +44,9 @@ class Params:
                                        # C: fade - first break is virtual, trade its SL (A re-entry)
                                        # W: weekly-breakout bias - one side only, one trade, no re-entry
     reentry_wait: int = 6
+    box_start_min: int = 300           # box start, minutes after IST midnight of the trading day (05:00)
+    box_len: int = 60                  # box length in minutes
+    order_hours: float = 5.0           # orders live this long after the box closes (06:00 -> 11:00)
     min_box_rel: float | None = None   # set: skip the day if its box < k x median box of the
     box_lookback: int = 20             #   previous `box_lookback` valid days (needs a full window)
     sl_box_mult: float | None = None   # set: SL = mult x that day's box (+ spread) instead of sl_pips;
@@ -239,24 +242,25 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
     trades: list[Trade] = []
     for day in days:
         c.days_total += 1
-        rs = m.idx(day + pd.Timedelta(hours=5) - IST)     # 05:00 IST = 23:30 UTC previous date
-        if rs < 0:
+        rs = m.idx(day + pd.Timedelta(minutes=p.box_start_min) - IST)   # default 05:00 IST
+        bl_ = p.box_len
+        place, expiry = rs + bl_, rs + bl_ + int(round(p.order_hours * 60))   # 06:00 / 11:00 IST
+        if rs < 0 or expiry >= m.n:
             c.skipped_no_data += 1
             continue
-        place, expiry = rs + 60, rs + 360                 # 06:00 and 11:00 IST
-        vol = m.vol[rs:rs + 60]
+        vol = m.vol[rs:rs + bl_]
         live = int((vol > 0).sum())
         if live == 0:
             c.skipped_no_data += 1
             c.skipped_dates.append((day.date(), "no data"))
             continue
-        if 60 - live > max_missing:
+        if bl_ - live > max_missing:
             c.skipped_incomplete += 1
-            c.skipped_dates.append((day.date(), f"{60 - live} empty minutes in range"))
+            c.skipped_dates.append((day.date(), f"{bl_ - live} empty minutes in range"))
             continue
         c.traded_days += 1
-        hi = float(m.bh[rs:rs + 60].max())
-        lo = float(m.bl[rs:rs + 60].min())
+        hi = float(m.bh[rs:rs + bl_].max())
+        lo = float(m.bl[rs:rs + bl_].min())
         range_pips = (hi - lo) / m.pip
         if p.min_box_rel is not None:
             window = recent_boxes[-p.box_lookback:]

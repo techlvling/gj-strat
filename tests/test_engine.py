@@ -393,3 +393,34 @@ def test_small_box_filter_uses_only_previous_days():
     # lookback 3: Jan 4 has no full window yet; Jan 5 window (40, 40, 10) -> median 40, 40 is fine
     _, c = run(m, Params(sl_box_mult=1.0, min_box_rel=0.5, box_lookback=3), days)
     assert c.skipped_small_box == 0
+
+
+# ----------------------------------------------------------------- configurable box timing
+def test_box_timing_is_configurable():
+    m = flat_market()
+    # box 09:00-09:59 IST, orders 10:00-12:00 (2 h)
+    bar(m, "09:20", 190.0, 190.30, 190.0, 190.0)
+    bar(m, "09:40", 190.0, 190.0, 189.70, 190.0)
+    bar(m, "05:30", 190.0, 195.0, 185.0, 190.0)       # inside the default box, outside this one
+    p = Params(box_start_min=9 * 60, order_hours=2, sl_box_mult=1.0)
+    bar(m, "12:00", 190.0, 190.40, 190.0, 190.3)      # 12:00 = expiry bar: must NOT fill
+    trades, c = run(m, p, [DAY])
+    assert trades == [] and c.initial_expired == 1
+    bar(m, "11:59", 190.0, 190.29, 190.0, 190.2)      # ask high 190.31 >= 190.30 -> buy
+    trades, _ = run(m, p, [DAY])
+    assert trades[0].side == "BUY" and trades[0].entry == pytest.approx(190.30)
+    assert trades[0].range_pips == pytest.approx(60)  # 190.30 - 189.70
+
+
+# ----------------------------------------------------------------- follow-through measure
+from gjstrat.analysis import levels_before_stop
+
+
+def test_levels_before_stop():
+    m = with_range(flat_market())
+    bar(m, "06:10", 190.0, 190.19, 190.0, 190.15)     # buy @190.20, 1R = 0.32 (SL 189.88)
+    bar(m, "07:00", 190.0, 190.55, 190.0, 190.5)      # +1R = 190.52
+    bar(m, "08:00", 190.0, 190.90, 190.0, 190.8)      # +2R = 190.84
+    bar(m, "09:00", 190.0, 190.0, 189.80, 189.85)     # stop before +3R (191.16)
+    t = run(m, Params(be_trigger=None), [DAY])[0][0]
+    assert levels_before_stop(m, t) == 2
