@@ -32,8 +32,9 @@ RISKS = [0.25, 0.5, 0.75, 1.0]
 
 def challenge(ev, R, ny_day, ist_day, start_trade, risk, targets=(0.08, 0.06), max_dd=0.10,
               daily=0.04, min_days=3):
-    """Play the challenge from trade `start_trade` (in entry order). Returns
-    (result, phase reached, event position at the end)."""
+    """Play the challenge from trade `start_trade` (in entry order). `risk` is a % of the
+    balance, or a function(balance, floor, target) -> % for dynamic sizing (balances are
+    relative: every phase starts at 1.0). Returns (result, phase reached, event position)."""
     phase, bal, open_, days = 0, 1.0, {}, set()
     cur_day, day_start = None, 1.0
     for pos in range(ev["first_pos"][start_trade], len(ev["kind"])):
@@ -41,7 +42,8 @@ def challenge(ev, R, ny_day, ist_day, start_trade, risk, targets=(0.08, 0.06), m
         if k < start_trade:
             continue
         if kind == 1:                                   # entry
-            open_[k] = risk / 100 * bal
+            pct = risk(bal, 1 - max_dd, 1 + targets[phase]) if callable(risk) else risk
+            open_[k] = pct / 100 * bal
             days.add(ist_day[k])
             continue
         if k not in open_:
@@ -60,13 +62,8 @@ def challenge(ev, R, ny_day, ist_day, start_trade, risk, targets=(0.08, 0.06), m
     return "unfinished", phase + 1, len(ev["kind"]) - 1
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--slippage", type=float, default=0.2)
-    ap.add_argument("--out", default="results/prop_sim")
-    args = ap.parse_args()
-    os.makedirs(args.out, exist_ok=True)
-
+def prepare(slippage: float):
+    """Backtested trades of Version B with their net R, days and the shared event list."""
     m = build_market(SYM, date(2010, 1, 1), date(2026, 10, 7), "data/raw",
                      "data/usdjpy_2010-01-01_2026-10-07.npz")
     days = trading_days(m, start="2010-01-01")
@@ -77,7 +74,7 @@ def main():
     trades, _ = run(m, p, days)
     trades.sort(key=lambda t: (t.entry_i, t.exit_i))
     lg = account(trades, m, 10_000, commission=7, swap=SwapModel.from_fred("rates", 1.0), sym=SYM,
-                 slippage_pips=args.slippage).set_index(["entry_i", "exit_i"])
+                 slippage_pips=slippage).set_index(["entry_i", "exit_i"])
     R = lg.loc[[(t.entry_i, t.exit_i) for t in trades], "R"].to_numpy()
     exit_utc = pd.DatetimeIndex([m.ts(t.exit_i) for t in trades])
     ny = exit_utc.tz_localize("UTC").tz_convert("America/New_York")
@@ -94,9 +91,18 @@ def main():
         first_pos[trade[pos]] = pos
     ev = {"kind": kind, "trade": trade, "first_pos": first_pos}
     bar_of_pos = np.array([b for b, _, _ in raw])
-
     # a challenge starts at the first trade of each trading day
     starts = [k for k in range(len(trades)) if k == 0 or ist_day[k] != ist_day[k - 1]]
+    return m, trades, R, ny_day, ist_day, ev, bar_of_pos, starts
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--slippage", type=float, default=0.2)
+    ap.add_argument("--out", default="results/prop_sim")
+    args = ap.parse_args()
+    os.makedirs(args.out, exist_ok=True)
+    m, trades, R, ny_day, ist_day, ev, bar_of_pos, starts = prepare(args.slippage)
     rows, detail = [], []
     for risk in RISKS:
         for s in starts:
