@@ -9,6 +9,7 @@ python run_backtest.py --synthetic  # random-walk sanity run (should show no edg
 python run_backtest.py              # downloads Dukascopy data into data/ (cached), full run
 python compare_versions.py          # base settings: A vs B vs C (fade) -> results/version_comparison/
 python run_majors.py                # A and B on the 7 majors (+ GBPJPY) -> results/majors/
+python run_majors.py --sl-box 1 --out results/majors_box_sl   # SL = that day's box + spread
 ```
 
 Version C ("fade"): the first break of the box is not traded. It is followed virtually with

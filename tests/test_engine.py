@@ -322,3 +322,16 @@ def test_version_w_trades_one_side_once():
     assert trades == [] and c.w_no_bias == 1
     trades, c = run(m, Params(version="W"), [DAY], bias={DAY: "SELL"})
     assert [t.side for t in trades] == ["SELL"] and trades[0].entry_i == i_of(m, "06:10")
+
+
+# ----------------------------------------------------------------- SL scaled to the box
+def test_box_scaled_stop_loss_and_break_even():
+    m = with_range(flat_market())                     # box 189.80-190.20 = 40 pips
+    bar(m, "06:10", 190.0, 190.19, 190.0, 190.15)     # buy @190.20, risk = 0.40 + 0.02 = 0.42
+    bar(m, "07:00", 190.0, 191.50, 190.0, 191.4)      # 3R = 191.46 -> BE armed (TP 191.88 not hit)
+    park(m, "07:01", "07:30", 191.0)
+    bar(m, "07:30", 191.0, 191.0, 190.20, 190.3)      # BE stop = 190.20 + 0.40*5/30 = 190.2667
+    t, *_ = run(m, Params(sl_box_mult=1.0), [DAY])[0]
+    assert t.risk == pytest.approx(0.42) and t.reason == "BE"
+    assert t.exit == pytest.approx(190.20 + 0.40 * 5 / 30)
+    assert Params(sl_box_mult=1.0).label == "RR4_SLbox1_BE3R+5_A"

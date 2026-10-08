@@ -44,6 +44,8 @@ class Params:
                                        # C: fade - first break is virtual, trade its SL (A re-entry)
                                        # W: weekly-breakout bias - one side only, one trade, no re-entry
     reentry_wait: int = 6
+    sl_box_mult: float | None = None   # set: SL = mult x that day's box (+ spread) instead of sl_pips;
+                                       # the BE offset scales the same way (be_plus / sl_pips of it)
     fade_expiry_11: bool = True        # C: reversal stop expires at 11:00 (False: lives with virtual trade)
 
     def __post_init__(self):
@@ -57,7 +59,8 @@ class Params:
     @property
     def label(self) -> str:
         v = self.version + ("" if self.version != "C" or self.fade_expiry_11 else "-noexp")
-        return f"RR{self.rr:g}_SL{self.sl_pips:g}_BE{self.be_label}_{v}"
+        sl = f"{self.sl_pips:g}" if self.sl_box_mult is None else f"box{self.sl_box_mult:g}"
+        return f"RR{self.rr:g}_SL{sl}_BE{self.be_label}_{v}"
 
 
 @dataclass
@@ -161,14 +164,14 @@ def find_entry(m: Market, start: int, end: int, buy_lvl: float | None,
 
 
 def manage(m: Market, side: str, ei: int, entry: float, risk: float,
-           p: Params) -> tuple[int, float, str, bool]:
+           p: Params, be_offset: float | None = None) -> tuple[int, float, str, bool]:
     """Run an open position to its exit. Returns (exit_i, exit_price, reason, be_moved)."""
     n = m.n
     if side == "BUY":
         lo, hi, op = m.bl, m.bh, m.bo           # long exits on bid
         sl, tp = entry - risk, entry + p.rr * risk
         be_lvl = None if p.be_trigger is None else entry + p.be_trigger * risk
-        be_stop = entry + p.be_plus * m.pip
+        be_stop = entry + (p.be_plus * m.pip if be_offset is None else be_offset)
         adverse = lambda s, lvl: lo[s] <= lvl + EPS
         favour = lambda s, lvl: hi[s] >= lvl - EPS
         gapped = lambda i, lvl: op[i] < lvl - EPS
@@ -176,7 +179,7 @@ def manage(m: Market, side: str, ei: int, entry: float, risk: float,
         lo, hi, op = m.al, m.ah, m.ao           # short exits on ask
         sl, tp = entry + risk, entry - p.rr * risk
         be_lvl = None if p.be_trigger is None else entry - p.be_trigger * risk
-        be_stop = entry - p.be_plus * m.pip
+        be_stop = entry - (p.be_plus * m.pip if be_offset is None else be_offset)
         adverse = lambda s, lvl: hi[s] >= lvl - EPS
         favour = lambda s, lvl: lo[s] <= lvl + EPS
         gapped = lambda i, lvl: op[i] > lvl + EPS
@@ -251,6 +254,11 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
         hi = float(m.bh[rs:rs + 60].max())
         lo = float(m.bl[rs:rs + 60].min())
         range_pips = (hi - lo) / m.pip
+        if p.sl_box_mult is None:
+            sl_dist, be_off = p.sl_pips * m.pip, p.be_plus * m.pip
+        else:
+            sl_dist = p.sl_box_mult * (hi - lo)
+            be_off = sl_dist * p.be_plus / p.sl_pips
 
         buy_lvl, sell_lvl = hi, lo
         if p.version == "W":
@@ -273,8 +281,8 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
             c.open_fill_0600 += 1
         if p.version == "C":
             # the breakout is virtual: its stop-loss price is where the real, opposite trade starts
-            vrisk = p.sl_pips * m.pip + max(m.ao[ei] - m.bo[ei], 0.0)
-            vxi, vxp, vreason, _ = manage(m, side, ei, px, vrisk, p)
+            vrisk = sl_dist + max(m.ao[ei] - m.bo[ei], 0.0)
+            vxi, vxp, vreason, _ = manage(m, side, ei, px, vrisk, p, be_off)
             if vreason != "SL":
                 if vreason == "TP":
                     c.fade_cancel_tp += 1
@@ -294,8 +302,8 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
         num = 1
         while True:
             spread = max(m.ao[ei] - m.bo[ei], 0.0)
-            risk = p.sl_pips * m.pip + spread
-            xi, xp, reason, be_moved = manage(m, side, ei, px, risk, p)
+            risk = sl_dist + spread
+            xi, xp, reason, be_moved = manage(m, side, ei, px, risk, p, be_off)
             trades.append(Trade(day, side, num, ei, px, xi, xp, reason, risk, spread,
                                 range_pips, gap, be_moved))
             if reason not in ("SL", "BE") or num == 2 or p.version == "W":

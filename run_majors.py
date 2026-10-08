@@ -4,7 +4,8 @@ Same rules as the GBPJPY study: IST 05:00-05:59 box, SL 30 pips + spread, RR 4, 
 1% risk compounding from $10,000 per pair, real bid/ask, same 60/40 in-sample / out-of-sample
 split by tradable days. Each pair is its own account.
 
-    python run_majors.py         # data from data/raw (python fetch_pairs.py --majors-only --save)
+    python run_majors.py                 # data from data/raw (python fetch_pairs.py --majors-only --save)
+    python run_majors.py --sl-box 1      # SL = that day's box size + spread instead of 30 pips
 """
 from __future__ import annotations
 
@@ -25,7 +26,6 @@ from gjstrat.engine import Params, run, trading_days
 from run_backtest import BASE, C, INK2, START, START_BAL, clean_log, fmt_table, split_days, years_of
 
 PAIRS = MAJORS + ["GBPJPY"]
-VERSIONS = {"A": Params(**BASE, version="A"), "B": Params(**BASE, version="B")}
 
 
 def tstat(r: np.ndarray) -> float:
@@ -37,8 +37,13 @@ def main():
     ap.add_argument("--end", default="2026-10-07")
     ap.add_argument("--out", default="results/majors")
     ap.add_argument("--commission", type=float, default=0.0)
+    ap.add_argument("--sl-box", type=float, default=None,
+                    help="SL = this multiple of the day's box (+ spread) instead of 30 pips")
     args = ap.parse_args()
     out = args.out
+    VERSIONS = {v: Params(**BASE, version=v, sl_box_mult=args.sl_box) for v in ("A", "B")}
+    sl_text = (f"SL = {args.sl_box:g} × that day's 05:00–05:59 box + spread (BE offset scaled "
+               f"the same: 5/30 of the SL distance)" if args.sl_box else "SL 30 pips + spread")
     os.makedirs(f"{out}/trade_logs", exist_ok=True)
 
     rows, curves, pooled, splits = [], {}, {v: {"is": [], "oos": [], "all": []} for v in VERSIONS}, {}
@@ -76,7 +81,9 @@ def main():
                 is_return_pct=s_is["net_return_pct"], oos_return_pct=s_oos["net_return_pct"],
                 skipped_days=probe.skipped_incomplete + probe.skipped_no_data,
                 reentries_filled=cnt.reentry_filled, reentries_invalid=cnt.reentry_skipped_invalid,
-                median_box_pips=float(np.median(ranges)), median_spread_pips=float(np.median(spreads))))
+                median_box_pips=float(np.median(ranges)), median_spread_pips=float(np.median(spreads)),
+                median_risk_pips=float(log["risk_pips"].median()),
+                spread_pct_of_risk=float((log["spread_pips"] / log["risk_pips"]).median() * 100)))
             print(f"{sym} {v}: trades={s_all['trades']} avgR={s_all['avg_R']:+.3f} "
                   f"t={s_all['sqn']:+.2f} ret={s_all['net_return_pct']:+.1f}% "
                   f"IS={s_is['avg_R']:+.3f} OOS={s_oos['avg_R']:+.3f}", flush=True)
@@ -121,8 +128,9 @@ def main():
     pool.index.name = "All 7 majors pooled"
 
     ctx = res[res.version == "A"].set_index("pair")[["median_box_pips", "median_spread_pips",
-                                                     "skipped_days"]]
-    ctx["SL as x box"] = (BASE["sl_pips"] / ctx.median_box_pips).round(2)
+                                                     "median_risk_pips", "spread_pct_of_risk",
+                                                     "skipped_days"]].copy()
+    ctx["SL as x box"] = (ctx.median_risk_pips / ctx.median_box_pips).round(2)
     ctx.index.name = "Pair"
     ab = res.pivot(index="pair", columns="version", values=["avg_R", "reentries_filled",
                                                             "reentries_invalid"])
@@ -130,8 +138,8 @@ def main():
     ab["A better?"] = np.where(ab["avg_R A"] > ab["avg_R B"], "yes", "no")
     ab.index.name = "Pair"
 
-    rep = ["# Versions A and B on every major pair\n",
-           "Base settings: IST 05:00–05:59 box, SL 30 pips + spread, RR 4, BE 3R → +5 pips, 1% "
+    rep = ["# Versions A and B on every major pair" + (f" — SL = {args.sl_box:g} × box" if args.sl_box else "") + "\n",
+           f"Base settings: IST 05:00–05:59 box, {sl_text}, RR 4, BE 3R → +5 pips, 1% "
            "risk compounding from $10,000, each pair its own account. Dukascopy bid/ask, "
            f"{START} → {args.end}. 60/40 in-sample / out-of-sample split by tradable days. "
            "GBPJPY is the original pair, shown for reference only and not included in the pooled row.\n",
@@ -140,8 +148,11 @@ def main():
            "\n## All majors pooled (every trade, equal weight)\n", fmt_table(pool, ".3f"),
            "\n## A vs B per pair\n", fmt_table(ab, ".3f"),
            "\n## Context: box size, spread, skipped days\n",
-           "The SL is 30 pips on every pair. On a pair whose 05:00–06:00 IST box is small, 30 pips "
-           "is a wide stop relative to that morning's movement; on GBPJPY it is close to one box.\n",
+           ("The SL follows each day's box, so it is the same size relative to the morning's movement "
+            "on every pair. Small boxes make the spread a bigger share of the risk (column "
+            "spread_pct_of_risk).\n" if args.sl_box else
+            "The SL is 30 pips on every pair. On a pair whose 05:00–06:00 IST box is small, 30 pips "
+            "is a wide stop relative to that morning's movement; on GBPJPY it is close to one box.\n"),
            fmt_table(ctx, ".2f"),
            "\n![Equity by pair](equity_by_pair.png)\n",
            "Trade logs: `trade_logs/<PAIR>_<A|B>.csv`. Raw numbers: `summary.csv`.\n"]
