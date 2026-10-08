@@ -335,3 +335,46 @@ def test_box_scaled_stop_loss_and_break_even():
     assert t.risk == pytest.approx(0.42) and t.reason == "BE"
     assert t.exit == pytest.approx(190.20 + 0.40 * 5 / 30)
     assert Params(sl_box_mult=1.0).label == "RR4_SLbox1_BE3R+5_A"
+
+
+# ----------------------------------------------------------------- swap
+from gjstrat.swap import SwapModel
+
+
+def flat_rates(usd, jpy, markup=0.0):
+    idx = pd.date_range("2023-01-01", "2025-01-01", freq="D")
+    return SwapModel({"USD": pd.Series(usd, idx), "JPY": pd.Series(jpy, idx)}, markup)
+
+
+def test_rollover_count_and_wednesday_triple():
+    # January: 17:00 New York = 22:00 UTC. Tue 10:00 -> Thu 10:00 crosses Tue (1) + Wed (3)
+    r = SwapModel.rollovers(pd.Timestamp("2024-01-09 10:00"), pd.Timestamp("2024-01-11 10:00"))
+    assert list(r["days"]) == [1, 3]
+    assert r["utc"].iloc[0] == pd.Timestamp("2024-01-09 22:00")
+    # July (EDT): rollover at 21:00 UTC; an intraday trade has none
+    assert SwapModel.rollovers(pd.Timestamp("2024-07-09 20:59"), pd.Timestamp("2024-07-09 21:00")).shape[0] == 1
+    assert SwapModel.rollovers(pd.Timestamp("2024-07-09 01:00"), pd.Timestamp("2024-07-09 20:00")).empty
+
+
+def test_swap_sign_and_markup():
+    a, b = pd.Timestamp("2024-01-09 10:00"), pd.Timestamp("2024-01-10 10:00")   # one Tue rollover
+    long_, n = flat_rates(5.0, 0.0).swap_usd("USDJPY", "BUY", 1.0, a, b, 150.0)
+    short, _ = flat_rates(5.0, 0.0).swap_usd("USDJPY", "SELL", 1.0, a, b, 150.0)
+    assert n == 1 and long_ == pytest.approx(100_000 * 0.05 / 365) and short == pytest.approx(-long_)
+    marked, _ = flat_rates(5.0, 0.0, markup=1.0).swap_usd("USDJPY", "BUY", 1.0, a, b, 150.0)
+    assert marked == pytest.approx(100_000 * 0.04 / 365)
+
+
+def test_account_books_swap_into_pnl_and_r():
+    m = with_range(flat_market())
+    bar(m, "06:10", 190.0, 190.19, 190.0, 190.15)     # buy Wed 2024-01-03, exits Thu 07:00 IST
+    i = i_of(m, "07:00", day=pd.Timestamp("2024-01-04"))
+    m.bo[i], m.bh[i], m.bl[i], m.bc[i] = 190.0, 191.50, 190.0, 191.4
+    m.ao[i], m.ah[i], m.al[i], m.ac[i] = 190.02, 191.52, 190.02, 191.42
+    trades, _ = go(m)
+    plain = account(trades, m)
+    sw = account(trades, m, swap=flat_rates(5.0, 0.0), sym="USDJPY")
+    assert sw.swap_nights[0] == 1                      # Wed 22:00 UTC rollover -> 3 days
+    assert sw.swap_usd[0] == pytest.approx(0.46 * 100_000 * 0.05 * 3 / 365, abs=0.01)
+    assert sw.pnl_usd[0] == pytest.approx(plain.pnl_usd[0] + sw.swap_usd[0], abs=0.02)
+    assert sw.R[0] > plain.R[0]

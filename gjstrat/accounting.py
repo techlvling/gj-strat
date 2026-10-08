@@ -7,7 +7,8 @@ this module replays them in time order against a compounding balance:
   * pip value per 1.0 lot (100k base) = 100,000 x pip in the quote currency, converted to USD
     with Market.quote_per_usd at entry (sizing) and at exit (realised P/L)
   * commission is USD per lot round turn
-R per trade = price move / 1R distance, minus commission expressed in R. Stats are in R and %.
+R per trade = price move / 1R distance, minus commission, plus swap (if a SwapModel is given),
+both expressed in R. Swap is booked when the trade closes. Stats are in R and %.
 """
 from __future__ import annotations
 
@@ -21,10 +22,13 @@ LOT = 100_000
 
 
 def account(trades: list[Trade], m: Market, start_balance: float = 10_000.0,
-            risk_pct: float = 1.0, commission: float = 0.0, lot_step: float = 0.01) -> pd.DataFrame:
+            risk_pct: float = 1.0, commission: float = 0.0, lot_step: float = 0.01,
+            swap=None, sym: str | None = None) -> pd.DataFrame:
+    """swap: gjstrat.swap.SwapModel (needs sym, e.g. "USDJPY"); None = no financing."""
     cols = ["day", "side", "trade_num", "entry_time_ist", "entry_price", "exit_time_ist",
             "exit_price", "range_pips", "risk_pips", "spread_pips", "R", "exit_reason", "lots",
-            "pnl_usd", "balance_after", "gap_fill", "be_moved", "entry_i", "exit_i"]
+            "pnl_usd", "swap_usd", "swap_nights", "balance_after", "gap_fill", "be_moved",
+            "entry_i", "exit_i"]
     if not trades:
         return pd.DataFrame(columns=cols)
     # events: (bar, order, trade idx). On one bar, earlier trades' exits are booked before new
@@ -35,6 +39,8 @@ def account(trades: list[Trade], m: Market, start_balance: float = 10_000.0,
     lots = np.zeros(len(trades))
     pnl = np.zeros(len(trades))
     rnet = np.zeros(len(trades))
+    swap_usd = np.zeros(len(trades))
+    nights = np.zeros(len(trades), dtype=int)
     bal_after = np.zeros(len(trades))
     for bar, kind, k in ev:
         t = trades[k]
@@ -46,9 +52,12 @@ def account(trades: list[Trade], m: Market, start_balance: float = 10_000.0,
             pips = (t.exit - t.entry if t.side == "BUY" else t.entry - t.exit) / m.pip
             gross = lots[k] * pips * LOT * m.pip / m.quote_per_usd[t.exit_i]
             comm = commission * lots[k]
-            pnl[k] = gross - comm
+            if swap is not None:
+                swap_usd[k], nights[k] = swap.swap_usd(sym, t.side, lots[k], m.ts(t.entry_i),
+                                                       m.ts(t.exit_i), t.entry)
+            pnl[k] = gross - comm + swap_usd[k]
             risk_usd = lots[k] * (t.risk / m.pip) * LOT * m.pip / m.quote_per_usd[t.entry_i]
-            rnet[k] = t.r - comm / risk_usd
+            rnet[k] = t.r + (swap_usd[k] - comm) / risk_usd
             bal += pnl[k]
             bal_after[k] = bal
     df = pd.DataFrame({
@@ -66,6 +75,8 @@ def account(trades: list[Trade], m: Market, start_balance: float = 10_000.0,
         "exit_reason": [t.reason for t in trades],
         "lots": lots.round(2),
         "pnl_usd": pnl.round(2),
+        "swap_usd": swap_usd.round(2),
+        "swap_nights": nights,
         "balance_after": bal_after.round(2),
         "gap_fill": [t.gap_fill for t in trades],
         "be_moved": [t.be_moved for t in trades],
