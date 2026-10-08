@@ -40,6 +40,7 @@ def main():
     ap.add_argument("--start", default="2010-01-01")
     ap.add_argument("--end", default="2026-10-07")
     ap.add_argument("--markup", type=float, default=1.0, help="broker swap markup, % a year")
+    ap.add_argument("--commission", type=float, default=0.0, help="USD per lot round turn")
     ap.add_argument("--out", default="results/usdjpy_history")
     args = ap.parse_args()
     out = args.out
@@ -66,7 +67,8 @@ def main():
         for cname, sw in costs.items():
             for pname, pdays in periods.items():
                 ds = set(pdays)
-                lg = account([t for t in trades if t.day in ds], m, START_BAL, swap=sw, sym=SYM)
+                lg = account([t for t in trades if t.day in ds], m, START_BAL, swap=sw, sym=SYM,
+                             commission=args.commission)
                 res[(v, cname, pname)] = stats(lg, START_BAL, years_of(pdays))
                 if pname == "Full period":
                     logs[(v, cname)] = lg
@@ -89,10 +91,12 @@ def main():
     # ---------------- cost sensitivity (A, main cost): commission and stop slippage, in R
     stop_exit = lg["exit_reason"].isin(["SL", "BE"]).astype(float)
     comm_pips = 7 / (1000 / lg["entry_price"])          # $7 per lot round turn, in USDJPY pips
+    base = f"as run (${args.commission:g} commission)" if args.commission else "as tested (spread only)"
+    steps = [(base, 0.0, 0)] + ([] if args.commission else [("+ $7/lot commission", 0.0, 1)])
+    steps += [(f"+ {s:g} pip slippage per stop fill", s, 0 if args.commission else 1)
+              for s in (0.1, 0.2, 0.3, 0.5, 1.0)]
     cost_rows = []
-    for name, slip, comm in [("as tested (Dukascopy spread only)", 0.0, 0), ("+ $7/lot commission", 0.0, 1),
-                             ("+ $7 + 0.5 pip slippage per stop fill", 0.5, 1),
-                             ("+ $7 + 1.0 pip slippage per stop fill", 1.0, 1)]:
+    for name, slip, comm in steps:
         adj = lg["R"] - (slip * (1 + stop_exit) + comm * comm_pips) / lg["risk_pips"]
         old = adj[lg["year"] < FOUND.year]
         cost_rows.append({"costs": name, "avg_R all": adj.mean(), "t all": tstat(adj),
@@ -131,7 +135,8 @@ def main():
     plt.close(fig)
 
     # ---------------- report
-    rep = [f"# USDJPY {args.start[:4]}–{args.end[:4]}: Versions A and B, SL = 1 × box, with swap\n",
+    rep = [f"# USDJPY {args.start[:4]}–{args.end[:4]}: Versions A and B, SL = 1 × box, with swap"
+           + (f", ${args.commission:g}/lot commission" if args.commission else "") + "\n",
            "Rules: IST 05:00–05:59 box, SL = that day's box + spread, TP 4R, BE at 3R → entry + "
            "5/30 of the SL distance, 1% risk compounding from $10,000, Dukascopy bid/ask. "
            f"{len(days)} tradable days; {probe.skipped_incomplete + probe.skipped_no_data} skipped "
