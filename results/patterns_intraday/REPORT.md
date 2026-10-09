@@ -1,0 +1,131 @@
+# Intraday pattern search — USDJPY, EURJPY, GBPJPY, EURUSD, GBPUSD, 2010–2026
+
+20 pre-declared setups per market, 100 tests (see run_patterns_intraday.py). Costs: $7/lot, swap (+1% markup), 0.2 pip slippage. Survival rule fixed before running: design (2010–2017) avg R > 0 with t ≥ 2 AND check (2018–2023) avg R > 0. Holdout (2024–2026) only for survivors.
+
+**Survivors: 3 of 100, robust (≥ 2 markets): 0.** About 2 would pass by luck.
+
+| Setup · pair | design trades | design win % | design avg R | design t | check trades | check win % | check avg R | check t | survives | robust |
+|---|---|---|---|---|---|---|---|---|---|---|
+| I1 ldn-breakout SL1range TP2R · EURJPY | 1786 | 46.473 | 0.075 | 2.893 | 1425 | 44.842 | 0.003 | 0.097 | True | False |
+| I2 prevday-breakout SL0.5ATR TP1R · EURJPY | 989 | 53.286 | 0.057 | 2.386 | 810 | 50.370 | 0.010 | 0.365 | True | False |
+| I3 inside-breakout TP1R · EURJPY | 154 | 56.494 | 0.111 | 2.193 | 113 | 40.708 | -0.044 | -0.758 | False | False |
+| I1 ldn-breakout SL1range TP1R · EURJPY | 1786 | 52.688 | 0.044 | 2.124 | 1425 | 50.386 | -0.008 | -0.354 | False | False |
+| I1 ldn-breakout SL0.5range TP2R · EURJPY | 1786 | 40.202 | 0.069 | 2.115 | 1425 | 36.772 | -0.060 | -1.692 | False | False |
+| I2 prevday-breakout SL0.5ATR TP2R · EURJPY | 989 | 50.455 | 0.056 | 2.053 | 810 | 47.407 | 0.017 | 0.555 | True | False |
+| I1 ldn-breakout SL1range TP1R · USDJPY | 1594 | 51.694 | 0.039 | 1.866 | 1227 | 50.856 | -0.008 | -0.314 | False | False |
+| I2 prevday-breakout SL0.25ATR TP2R · EURJPY | 989 | 43.074 | 0.075 | 1.855 | 810 | 39.506 | -0.018 | -0.406 | False | False |
+| I1 ldn-breakout SL1range TP2R · USDJPY | 1594 | 45.922 | 0.042 | 1.658 | 1227 | 46.536 | 0.015 | 0.500 | False | False |
+| I2 prevday-breakout SL0.25ATR TP1R · EURJPY | 989 | 53.589 | 0.048 | 1.587 | 810 | 49.383 | -0.053 | -1.573 | False | False |
+| I3 nr7-breakout TP1R · EURJPY | 161 | 52.795 | 0.073 | 1.429 | 133 | 54.135 | 0.109 | 1.892 | False | False |
+| I1 ldn-breakout SL0.5range TP1R · EURJPY | 1786 | 53.639 | 0.028 | 1.184 | 1425 | 50.316 | -0.058 | -2.202 | False | False |
+| I3 inside-breakout TP1R · GBPUSD | 186 | 53.226 | 0.055 | 1.148 | 144 | 50.000 | -0.015 | -0.261 | False | False |
+| I3 inside-breakout TP2R · EURJPY | 154 | 53.896 | 0.055 | 1.050 | 113 | 39.823 | -0.057 | -0.979 | False | False |
+| I3 inside-breakout TP1R · USDJPY | 158 | 48.734 | 0.053 | 1.022 | 114 | 52.632 | 0.071 | 1.184 | False | False |
+| I3 nr7-breakout TP1R · USDJPY | 151 | 49.669 | 0.049 | 0.899 | 115 | 48.696 | -0.008 | -0.122 | False | False |
+| I3 inside-breakout TP2R · GBPUSD | 186 | 52.151 | 0.044 | 0.872 | 144 | 49.306 | 0.011 | 0.170 | False | False |
+| I3 nr7-breakout TP2R · USDJPY | 151 | 46.358 | 0.052 | 0.792 | 115 | 46.087 | -0.018 | -0.233 | False | False |
+| I5 night-scalp BB2.5 SL0.3ATR · EURUSD | 1247 | 64.314 | 0.011 | 0.727 | 879 | 61.889 | -0.030 | -1.719 | False | False |
+| I3 inside-breakout TP2R · USDJPY | 158 | 46.203 | 0.036 | 0.628 | 114 | 51.754 | 0.078 | 1.173 | False | False |
+| I2 prevday-breakout SL0.5ATR TP2R · EURUSD | 1147 | 48.474 | 0.016 | 0.579 | 933 | 47.160 | -0.013 | -0.419 | False | False |
+| I3 inside-breakout TP1R · GBPJPY | 156 | 51.282 | 0.029 | 0.561 | 137 | 54.745 | 0.118 | 2.143 | False | False |
+| I3 inside-breakout TP1R · EURUSD | 158 | 51.899 | 0.030 | 0.538 | 132 | 52.273 | -0.019 | -0.326 | False | False |
+| I1 ldn-breakout SL0.5range TP2R · USDJPY | 1594 | 39.398 | 0.017 | 0.511 | 1227 | 37.979 | -0.064 | -1.694 | False | False |
+| I2 prevday-breakout SL0.5ATR TP2R · USDJPY | 841 | 45.541 | 0.011 | 0.383 | 696 | 50.287 | 0.051 | 1.541 | False | False |
+| I3 nr7-breakout TP2R · EURJPY | 161 | 50.932 | 0.019 | 0.362 | 133 | 52.632 | 0.115 | 1.749 | False | False |
+| I3 nr7-breakout TP2R · EURUSD | 176 | 48.864 | 0.018 | 0.307 | 171 | 50.292 | 0.043 | 0.666 | False | False |
+| I2 prevday-breakout SL0.5ATR TP1R · USDJPY | 841 | 47.919 | 0.006 | 0.248 | 696 | 52.586 | 0.036 | 1.257 | False | False |
+| I3 nr7-breakout TP1R · EURUSD | 176 | 51.136 | 0.008 | 0.148 | 171 | 52.632 | 0.023 | 0.397 | False | False |
+| I3 inside-breakout TP2R · EURUSD | 158 | 50.000 | 0.008 | 0.136 | 132 | 50.758 | 0.002 | 0.032 | False | False |
+| I3 inside-breakout TP2R · GBPJPY | 156 | 49.359 | 0.006 | 0.113 | 137 | 54.015 | 0.132 | 2.163 | False | False |
+| I3 nr7-breakout TP2R · GBPUSD | 195 | 47.692 | 0.005 | 0.077 | 143 | 48.951 | 0.039 | 0.568 | False | False |
+| I1 ldn-breakout SL1range TP2R · EURUSD | 1909 | 41.435 | 0.002 | 0.067 | 1488 | 40.121 | -0.031 | -0.972 | False | False |
+| I3 nr7-breakout TP1R · GBPUSD | 195 | 48.718 | -0.014 | -0.269 | 143 | 49.650 | 0.010 | 0.154 | False | False |
+| I3 nr7-breakout TP1R · GBPJPY | 179 | 48.603 | -0.016 | -0.306 | 142 | 51.408 | 0.017 | 0.285 | False | False |
+| I2 prevday-breakout SL0.5ATR TP1R · EURUSD | 1147 | 50.392 | -0.008 | -0.320 | 933 | 50.161 | -0.017 | -0.629 | False | False |
+| I2 prevday-breakout SL0.25ATR TP1R · USDJPY | 841 | 50.773 | -0.011 | -0.337 | 696 | 50.431 | -0.043 | -1.181 | False | False |
+| I3 nr7-breakout TP2R · GBPJPY | 179 | 48.045 | -0.021 | -0.363 | 142 | 49.296 | -0.010 | -0.166 | False | False |
+| I2 prevday-breakout SL0.25ATR TP1R · EURUSD | 1147 | 51.874 | -0.011 | -0.389 | 933 | 50.804 | -0.039 | -1.202 | False | False |
+| I2 prevday-breakout SL0.5ATR TP1R · GBPUSD | 1211 | 48.225 | -0.011 | -0.486 | 890 | 49.101 | 0.008 | 0.278 | False | False |
+| I2 prevday-breakout SL0.25ATR TP2R · EURUSD | 1147 | 39.756 | -0.020 | -0.517 | 933 | 39.979 | -0.009 | -0.214 | False | False |
+| I2 prevday-breakout SL0.25ATR TP2R · GBPUSD | 1211 | 37.325 | -0.026 | -0.691 | 890 | 36.854 | -0.032 | -0.730 | False | False |
+| I1 ldn-breakout SL0.5range TP1R · USDJPY | 1594 | 51.757 | -0.020 | -0.825 | 1227 | 49.959 | -0.079 | -2.823 | False | False |
+| I2 prevday-breakout SL0.25ATR TP2R · USDJPY | 841 | 38.288 | -0.038 | -0.881 | 696 | 41.810 | 0.022 | 0.457 | False | False |
+| I2 prevday-breakout SL0.5ATR TP2R · GBPJPY | 1064 | 44.925 | -0.024 | -0.892 | 785 | 45.860 | 0.007 | 0.223 | False | False |
+| I2 prevday-breakout SL0.5ATR TP1R · GBPJPY | 1064 | 47.556 | -0.022 | -0.911 | 785 | 48.408 | -0.013 | -0.478 | False | False |
+| I5 night-scalp BB2.5 SL0.15ATR · EURUSD | 1247 | 57.097 | -0.025 | -0.983 | 879 | 56.542 | -0.064 | -2.189 | False | False |
+| I2 prevday-breakout SL0.5ATR TP2R · GBPUSD | 1211 | 45.087 | -0.026 | -1.034 | 890 | 46.180 | 0.021 | 0.676 | False | False |
+| I1 ldn-breakout SL1range TP2R · GBPJPY | 1827 | 42.310 | -0.028 | -1.120 | 1442 | 40.777 | -0.053 | -1.828 | False | False |
+| I5 night-scalp BB2 SL0.3ATR · EURUSD | 2012 | 66.799 | -0.012 | -1.127 | 1553 | 64.842 | -0.038 | -3.262 | False | False |
+| I1 ldn-breakout SL1range TP1R · EURUSD | 1909 | 50.026 | -0.025 | -1.165 | 1488 | 48.454 | -0.070 | -2.851 | False | False |
+| I2 prevday-breakout SL0.25ATR TP1R · GBPUSD | 1211 | 49.298 | -0.042 | -1.472 | 890 | 49.663 | -0.038 | -1.165 | False | False |
+| I1 ldn-breakout SL0.5range TP2R · EURUSD | 1909 | 35.045 | -0.051 | -1.599 | 1488 | 31.720 | -0.169 | -4.745 | False | False |
+| I2 prevday-breakout SL0.25ATR TP2R · GBPJPY | 1064 | 36.560 | -0.073 | -1.925 | 785 | 37.325 | -0.054 | -1.191 | False | False |
+| I1 ldn-breakout SL1range TP1R · GBPJPY | 1827 | 48.166 | -0.040 | -1.941 | 1442 | 48.474 | -0.038 | -1.596 | False | False |
+| I1 ldn-breakout SL0.5range TP2R · GBPJPY | 1827 | 35.030 | -0.062 | -1.963 | 1442 | 35.368 | -0.041 | -1.127 | False | False |
+| I1 ldn-breakout SL1range TP2R · GBPUSD | 1946 | 39.003 | -0.054 | -1.970 | 1498 | 39.987 | -0.040 | -1.294 | False | False |
+| I4 ny-orb 30m TP2R · EURUSD | 1954 | 39.611 | -0.054 | -1.975 | 1511 | 42.224 | -0.026 | -0.836 | False | False |
+| I4 ny-orb 60m TP2R · EURJPY | 1701 | 43.210 | -0.053 | -2.323 | 1353 | 43.089 | -0.061 | -2.448 | False | False |
+| I5 night-scalp BB2.5 SL0.15ATR · GBPUSD | 1107 | 54.291 | -0.059 | -2.325 | 897 | 53.958 | -0.069 | -2.378 | False | False |
+| I4 ny-orb 30m TP1R · EURUSD | 1954 | 49.591 | -0.052 | -2.450 | 1511 | 50.629 | -0.044 | -1.807 | False | False |
+| I5 night-scalp BB2 SL0.3ATR · EURJPY | 2073 | 62.132 | -0.031 | -2.463 | 1577 | 62.587 | -0.049 | -3.382 | False | False |
+| I2 prevday-breakout SL0.25ATR TP1R · GBPJPY | 1064 | 47.086 | -0.073 | -2.468 | 785 | 48.917 | -0.055 | -1.578 | False | False |
+| I5 night-scalp BB2.5 SL0.3ATR · GBPJPY | 1278 | 57.433 | -0.043 | -2.522 | 886 | 53.837 | -0.087 | -4.137 | False | False |
+| I5 night-scalp BB2.5 SL0.3ATR · EURJPY | 1306 | 57.504 | -0.045 | -2.642 | 979 | 56.997 | -0.050 | -2.420 | False | False |
+| I5 night-scalp BB2 SL0.15ATR · EURUSD | 2012 | 60.288 | -0.048 | -2.664 | 1553 | 59.240 | -0.091 | -4.634 | False | False |
+| I1 ldn-breakout SL1range TP1R · GBPUSD | 1946 | 48.458 | -0.057 | -2.667 | 1498 | 50.200 | -0.022 | -0.881 | False | False |
+| I4 ny-orb 60m TP2R · EURUSD | 1767 | 42.841 | -0.060 | -2.777 | 1345 | 44.238 | -0.031 | -1.253 | False | False |
+| I4 ny-orb 60m TP1R · EURJPY | 1701 | 46.914 | -0.056 | -2.808 | 1353 | 46.859 | -0.062 | -2.899 | False | False |
+| I4 ny-orb 30m TP2R · USDJPY | 1908 | 38.260 | -0.079 | -2.870 | 1483 | 40.931 | -0.065 | -2.152 | False | False |
+| I4 ny-orb 60m TP1R · EURUSD | 1767 | 46.746 | -0.054 | -2.876 | 1345 | 48.104 | -0.034 | -1.551 | False | False |
+| I5 night-scalp BB2.5 SL0.15ATR · GBPJPY | 1278 | 48.983 | -0.079 | -2.907 | 886 | 44.470 | -0.174 | -5.229 | False | False |
+| I5 night-scalp BB2.5 SL0.3ATR · GBPUSD | 1107 | 59.350 | -0.048 | -2.975 | 897 | 60.870 | -0.018 | -1.047 | False | False |
+| I5 night-scalp BB2 SL0.3ATR · GBPJPY | 2017 | 60.932 | -0.038 | -3.034 | 1518 | 58.498 | -0.080 | -5.396 | False | False |
+| I1 ldn-breakout SL0.5range TP1R · EURUSD | 1909 | 49.712 | -0.071 | -3.076 | 1488 | 47.043 | -0.148 | -5.692 | False | False |
+| I4 ny-orb 30m TP2R · GBPUSD | 1947 | 37.442 | -0.086 | -3.144 | 1522 | 38.239 | -0.092 | -3.012 | False | False |
+| I5 night-scalp BB2.5 SL0.3ATR · USDJPY | 1336 | 55.763 | -0.062 | -3.440 | 1089 | 56.841 | -0.068 | -3.414 | False | False |
+| I5 night-scalp BB2 SL0.3ATR · GBPUSD | 1958 | 63.279 | -0.038 | -3.504 | 1503 | 64.471 | -0.035 | -2.829 | False | False |
+| I1 ldn-breakout SL0.5range TP1R · GBPJPY | 1827 | 47.564 | -0.084 | -3.610 | 1442 | 49.168 | -0.063 | -2.401 | False | False |
+| I4 ny-orb 30m TP2R · EURJPY | 1948 | 37.834 | -0.097 | -3.634 | 1503 | 40.452 | -0.050 | -1.639 | False | False |
+| I5 night-scalp BB2 SL0.15ATR · GBPUSD | 1958 | 58.427 | -0.065 | -3.700 | 1503 | 57.618 | -0.090 | -4.421 | False | False |
+| I4 ny-orb 30m TP1R · USDJPY | 1908 | 48.218 | -0.085 | -3.914 | 1483 | 48.955 | -0.080 | -3.326 | False | False |
+| I4 ny-orb 30m TP1R · EURJPY | 1948 | 47.433 | -0.083 | -3.922 | 1503 | 46.906 | -0.109 | -4.528 | False | False |
+| I4 ny-orb 60m TP1R · USDJPY | 1667 | 46.011 | -0.079 | -3.935 | 1336 | 48.503 | -0.071 | -3.316 | False | False |
+| I4 ny-orb 30m TP1R · GBPUSD | 1947 | 47.252 | -0.085 | -3.970 | 1522 | 47.240 | -0.104 | -4.296 | False | False |
+| I4 ny-orb 60m TP2R · GBPUSD | 1780 | 42.360 | -0.088 | -3.991 | 1358 | 42.931 | -0.060 | -2.376 | False | False |
+| I5 night-scalp BB2.5 SL0.15ATR · EURJPY | 1306 | 47.779 | -0.109 | -4.002 | 979 | 46.374 | -0.126 | -3.812 | False | False |
+| I4 ny-orb 60m TP2R · USDJPY | 1667 | 40.732 | -0.097 | -4.116 | 1336 | 45.509 | -0.069 | -2.822 | False | False |
+| I5 night-scalp BB2 SL0.15ATR · EURJPY | 2073 | 52.774 | -0.084 | -4.179 | 1577 | 51.490 | -0.143 | -6.210 | False | False |
+| I4 ny-orb 60m TP1R · GBPUSD | 1780 | 46.573 | -0.081 | -4.217 | 1358 | 46.097 | -0.080 | -3.653 | False | False |
+| I1 ldn-breakout SL0.5range TP2R · GBPUSD | 1946 | 31.912 | -0.135 | -4.382 | 1498 | 33.979 | -0.068 | -1.901 | False | False |
+| I5 night-scalp BB2 SL0.15ATR · GBPJPY | 2017 | 51.760 | -0.095 | -4.745 | 1518 | 49.473 | -0.161 | -6.881 | False | False |
+| I5 night-scalp BB2 SL0.3ATR · USDJPY | 2073 | 59.238 | -0.069 | -5.081 | 1611 | 60.459 | -0.082 | -5.390 | False | False |
+| I4 ny-orb 30m TP2R · GBPJPY | 1939 | 35.740 | -0.147 | -5.558 | 1508 | 38.329 | -0.081 | -2.659 | False | False |
+| I5 night-scalp BB2 SL0.15ATR · USDJPY | 2073 | 50.699 | -0.118 | -5.640 | 1611 | 51.086 | -0.149 | -6.422 | False | False |
+| I4 ny-orb 30m TP1R · GBPJPY | 1939 | 45.642 | -0.121 | -5.650 | 1508 | 45.491 | -0.114 | -4.727 | False | False |
+| I5 night-scalp BB2.5 SL0.15ATR · USDJPY | 1336 | 44.461 | -0.161 | -5.806 | 1089 | 47.658 | -0.133 | -4.235 | False | False |
+| I1 ldn-breakout SL0.5range TP1R · GBPUSD | 1946 | 46.454 | -0.132 | -5.834 | 1498 | 49.733 | -0.066 | -2.546 | False | False |
+| I4 ny-orb 60m TP1R · GBPJPY | 1768 | 44.287 | -0.115 | -5.937 | 1366 | 46.486 | -0.078 | -3.584 | False | False |
+| I4 ny-orb 60m TP2R · GBPJPY | 1768 | 40.215 | -0.136 | -6.220 | 1366 | 42.899 | -0.078 | -3.144 | False | False |
+
+## Survivors incl. holdout
+
+|  | I1 ldn-breakout SL1range TP2R · EURJPY | I2 prevday-breakout SL0.5ATR TP1R · EURJPY | I2 prevday-breakout SL0.5ATR TP2R · EURJPY |
+|---|---|---|---|
+| design trades | 1786.000 | 989.000 | 989.000 |
+| design win % | 46.473 | 53.286 | 50.455 |
+| design avg R | 0.075 | 0.057 | 0.056 |
+| design t | 2.893 | 2.386 | 2.053 |
+| design max DD % (0.5%) | 11.051 | 5.991 | 7.913 |
+| design return % (0.5%) | 87.359 | 29.472 | 29.177 |
+| check trades | 1425.000 | 810.000 | 810.000 |
+| check win % | 44.842 | 50.370 | 47.407 |
+| check avg R | 0.003 | 0.010 | 0.017 |
+| check t | 0.097 | 0.365 | 0.555 |
+| check max DD % (0.5%) | 20.335 | 8.814 | 9.164 |
+| check return % (0.5%) | 1.026 | 3.480 | 6.153 |
+| holdout trades | 608.000 | 332.000 | 332.000 |
+| holdout win % | 47.533 | 49.096 | 46.687 |
+| holdout avg R | 0.006 | -0.045 | -0.041 |
+| holdout t | 0.143 | -1.137 | -0.932 |
+| holdout max DD % (0.5%) | 8.605 | 8.468 | 7.837 |
+| holdout return % (0.5%) | 0.689 | -7.156 | -6.525 |

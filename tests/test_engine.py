@@ -504,3 +504,24 @@ def test_gold_price_scale_and_pip():
     from gjstrat.data import pip_size, price_scale
     assert price_scale("XAUUSD") == 1000.0 and pip_size("XAUUSD") == 0.01
     assert price_scale("EURUSD") == 100000.0 and pip_size("CADJPY") == 0.01
+
+
+from gjstrat.patterns import _fill, contraction_breakout, london_breakout, night_reversion, ny_orb, prevday_breakout
+
+
+def test_intraday_builders_oco_and_no_lookahead():
+    m = synthetic_market(days=200)
+    d = daily_table(m)
+    for s in london_breakout(m, d, 1.0, 2.0):
+        a, b = s.start_i - 7 * 60, s.start_i                       # 00:00-06:59 UTC range
+        hi, lo = m.bh[a:b].max(), m.bl[a:b].min()
+        assert m.ts(s.start_i).hour == 7
+        assert s.level == (lo if s.side == "SELL" else s.level) and (s.side == "SELL" or s.level > hi)
+        assert s.tp_dist == 2.0 * s.sl_dist
+    for s in prevday_breakout(m, d, 0.5, 1.0) + contraction_breakout(m, d, "nr7", 1.0) + ny_orb(m, d, 30, 2.0):
+        assert _fill(m, s) is not None and _fill(m, s)[0] < s.expiry_i
+    for s in night_reversion(m, d, 2.0, 0.3):
+        k = s.start_i // 15 - 1
+        c = m.bc[(k + 1) * 15 - 1]                                 # close of the signal bar
+        assert m.ts(s.exit_by_i).hour == 7 and s.start_i % 15 == 0
+        assert s.tp_dist > 0 and c == m.bc[s.start_i - 1]

@@ -323,3 +323,136 @@ def ny_open_momentum(m: Market, d: pd.DataFrame, exit_at: tuple[int, int], sl_at
         out.append(Signal(day, "BUY" if move > 0 else "SELL", b, "market", None, b + 1,
                           sl_atr * r.atr20, None, local_idx(m, day, *exit_at, NY), "nyopen-mom"))
     return out
+
+
+# --------------------------------------------------------------------------- intraday breakouts / scalp
+def _oco(m: Market, a: Signal, b: Signal) -> Signal | None:
+    """One-cancels-other: keep the stop that fills first (None if neither fills)."""
+    fa, fb = _fill(m, a), _fill(m, b)
+    if fa is None and fb is None:
+        return None
+    if fb is None or (fa is not None and fa[0] <= fb[0]):
+        return a
+    return b
+
+
+def _bracket(m: Market, day, hi_bid: float, lo_bid: float, start: int, expiry: int, sl_d: float,
+             tp_d: float, exit_by: int, tag: str) -> Signal | None:
+    """Buy stop at hi_bid + spread (on ask), sell stop at lo_bid (on bid), OCO. Skipped if the
+    price is already outside the levels when the orders go live."""
+    if start < 0 or exit_by >= m.n or sl_d <= 0 or tp_d <= 0:
+        return None
+    spread = max(m.ao[start] - m.bo[start], 0.0)
+    if not (lo_bid < m.bo[start] < hi_bid):
+        return None
+    buy = Signal(day, "BUY", start, "stop", hi_bid + spread, expiry, sl_d, tp_d, exit_by, tag)
+    sell = Signal(day, "SELL", start, "stop", lo_bid, expiry, sl_d, tp_d, exit_by, tag)
+    return _oco(m, buy, sell)
+
+
+def london_breakout(m: Market, d: pd.DataFrame, sl_range: float, rr: float) -> list[Signal]:
+    """Asian range 00:00-06:59 UTC; at 07:00 OCO stops at its edges, live to 12:00 UTC.
+    SL = sl_range x range (min 0.1 ATR), TP = rr x SL, time exit at the New York close."""
+    out = []
+    for day, r in d.iterrows():
+        if day.dayofweek >= 5:
+            continue
+        a, b = utc_idx(m, day, 0), utc_idx(m, day, 7)
+        if a < 0 or b >= m.n:
+            continue
+        hi, lo = m.bh[a:b].max(), m.bl[a:b].min()
+        sl_d = max(sl_range * (hi - lo), 0.1 * r.atr20)
+        s = _bracket(m, day, hi, lo, b, utc_idx(m, day, 12), sl_d, rr * sl_d, int(r.end_i) - 1, "ldn-bo")
+        if s is not None:
+            out.append(s)
+    return out
+
+
+def prevday_breakout(m: Market, d: pd.DataFrame, sl_atr: float, rr: float) -> list[Signal]:
+    """OCO stops at yesterday's high / low, live 07:00-16:00 UTC (only if price starts inside).
+    SL sl_atr x ATR20, TP rr x SL, time exit at the New York close."""
+    out = []
+    for day, r in d.iterrows():
+        if day.dayofweek >= 5:
+            continue
+        sl_d = sl_atr * r.atr20
+        s = _bracket(m, day, r.prev_high, r.prev_low, utc_idx(m, day, 7), utc_idx(m, day, 16), sl_d,
+                     rr * sl_d, int(r.end_i) - 1, "pd-bo")
+        if s is not None:
+            out.append(s)
+    return out
+
+
+def contraction_breakout(m: Market, d: pd.DataFrame, kind: str, rr: float) -> list[Signal]:
+    """After an NR7 day (narrowest of the last 7) or an inside day: OCO stops at that day's
+    high / low, live 07:00-16:00 UTC. SL = that day's range (min 0.1 ATR), TP rr x SL,
+    time exit at the New York close."""
+    rng = d.high - d.low
+    nr7 = (rng == rng.rolling(7).min()).shift(1, fill_value=False)
+    inside = ((d.high <= d.high.shift(1)) & (d.low >= d.low.shift(1))).shift(1, fill_value=False)
+    flag = nr7 if kind == "nr7" else inside
+    out = []
+    for day, r in d.iterrows():
+        if day.dayofweek >= 5 or not flag[day]:
+            continue
+        sl_d = max(r.prev_high - r.prev_low, 0.1 * r.atr20)
+        s = _bracket(m, day, r.prev_high, r.prev_low, utc_idx(m, day, 7), utc_idx(m, day, 16), sl_d,
+                     rr * sl_d, int(r.end_i) - 1, f"{kind}-bo")
+        if s is not None:
+            out.append(s)
+    return out
+
+
+def ny_orb(m: Market, d: pd.DataFrame, minutes: int, rr: float) -> list[Signal]:
+    """New York opening range 09:30 + `minutes`; OCO stops at its edges until 12:00 NY.
+    SL = range (min 0.1 ATR), TP rr x range, time exit 16:00 NY."""
+    out = []
+    for day, r in d.iterrows():
+        if day.dayofweek >= 5:
+            continue
+        a = local_idx(m, day, 9, 30, NY)
+        b = a + minutes
+        if a < 0 or b >= m.n:
+            continue
+        hi, lo = m.bh[a:b].max(), m.bl[a:b].min()
+        sl_d = max(hi - lo, 0.1 * r.atr20)
+        s = _bracket(m, day, hi, lo, b, local_idx(m, day, 12, 0, NY), sl_d, rr * sl_d,
+                     local_idx(m, day, 16, 0, NY), f"orb{minutes}")
+        if s is not None:
+            out.append(s)
+    return out
+
+
+def night_reversion(m: Market, d: pd.DataFrame, band_std: float, sl_atr: float) -> list[Signal]:
+    """Quiet-hours scalp, 22:00-06:00 UTC (Tue-Fri nights; Sunday reopen skipped): a 15-minute
+    bar closes outside its 20-bar Bollinger band (`band_std`) -> fade at the next bar open,
+    TP = the band middle, SL sl_atr x ATR20, time exit 07:00 UTC. First signal per side per night."""
+    b = bars(m, 15)
+    c = b["c"]
+    mid = pd.Series(c).rolling(20).mean().to_numpy()
+    sd = pd.Series(c).rolling(20).std().to_numpy()
+    out = []
+    for day, r in d.iterrows():
+        if day.dayofweek >= 5 or day.dayofweek == 0:
+            continue
+        k0 = utc_idx(m, day - pd.Timedelta(days=1), 22) // 15
+        k1 = utc_idx(m, day, 6) // 15
+        x = utc_idx(m, day, 7)
+        if k0 < 20 or x >= m.n:
+            continue
+        done = set()
+        for k in range(k0, k1):
+            if np.isnan(sd[k]) or sd[k] == 0:
+                continue
+            if "SELL" not in done and c[k] > mid[k] + band_std * sd[k]:
+                side = "SELL"
+            elif "BUY" not in done and c[k] < mid[k] - band_std * sd[k]:
+                side = "BUY"
+            else:
+                continue
+            done.add(side)
+            tp_d = abs(c[k] - mid[k])
+            start = (k + 1) * 15
+            out.append(Signal(day, side, start, "market", None, start + 1, sl_atr * r.atr20, tp_d, x,
+                              f"night{band_std:g}"))
+    return out
