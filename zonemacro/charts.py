@@ -54,8 +54,9 @@ def plot_combo(path: str, title: str, curves: dict, bands: dict, grid: pd.Dateti
         for s in ("left", "bottom"):
             ax.spines[s].set_color(GRID)
         ax.tick_params(colors=INK2, labelsize=8)
-    np.atleast_1d(axes)[0].legend(fontsize=8, frameon=False, loc="upper left")
+    handles, labels = np.atleast_1d(axes)[0].get_legend_handles_labels()
+    fig.legend(handles, labels, fontsize=8, frameon=False, loc="lower center", ncol=len(labels))
     fig.suptitle(title, fontsize=12, color=INK, x=0.01, ha="left")
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
     fig.savefig(path, dpi=130, facecolor=SURFACE)
     plt.close(fig)

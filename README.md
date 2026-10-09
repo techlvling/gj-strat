@@ -98,3 +98,7 @@ tested out-of-sample, benchmarked against no filter, 1000 random filters and a 2
 | `zonemacro/zones.py` | ATR, base/impulse/zone detection |
 | `zonemacro/engine.py` | 15m execution (A/B entries, SL/TP, gaps), swap, one-position portfolio pass, stats |
 | `zonemacro/report.py`, `zonemacro/charts.py` | REPORT.md and equity charts |
+
+`python run_zone_alone.py` — the same zones with no day filter, ranked the same way, benchmarked
+against random entries placed inside each zone's own life (same side, stop and target; only the
+timing differs) -> `results/zone_alone/REPORT.md`.

@@ -9,10 +9,11 @@ the top 5 out-of-sample, plateau check, flags.
 
 Benchmark = random-entry placebo. For every real trade, a placebo trade with the same side, the
 same stop distance and the same TP distance, entered at market (buys at ask, sells at bid) at
-the close of a random 15m bar in the same calendar month (so volatility regime is matched),
-exits simulated with the same engine. 1000 seeds. If zone entries carry information, real
-trades should beat most placebo seeds. Compared without swap (swap does not depend on the
-entry point).
+the close of a random 15m bar inside the SAME zone's life (from the impulse close to the 50-bar
+expiry), exits simulated with the same engine. So the placebo knows exactly what the zone knew
+(its existence and direction) and only the timing of the entry differs: the touch vs a random
+moment. 1000 seeds. If waiting for the zone touch carries information, real trades should beat
+most placebo seeds. Compared without swap (swap does not depend on the entry point).
 """
 from __future__ import annotations
 
@@ -36,14 +37,11 @@ SERIES = {"zones": ("#2a78d6", "Zones (no filter)")}
 
 def placebo(m: E.M15, t: pd.DataFrame, seeds: int, split_ns: int, grid_ns: np.ndarray):
     """Random-entry placebo for the taken trades t. Returns (per-seed stats rows, equity paths)."""
-    ts = pd.to_datetime(m.t)
-    mkey = (ts.year * 12 + ts.month).to_numpy()
     side = t["side"].to_numpy()
     R_ = t["R"].to_numpy()
     tpd = side * (t["tp"].to_numpy() - t["entry_price"].to_numpy())
-    ekey = mkey[t["entry_idx"].to_numpy()]
-    lo = np.searchsorted(mkey, ekey, side="left")
-    hi = np.minimum(np.searchsorted(mkey, ekey, side="right"), m.n - 1)
+    lo = t["zone_active_idx"].to_numpy()
+    hi = np.maximum(t["zone_expiry_idx"].to_numpy(), lo + 1)
     rows, paths = [], np.zeros((seeds, len(grid_ns)))
     for seed in range(seeds):
         rng = np.random.default_rng(10_000 + seed)
@@ -65,6 +63,43 @@ def placebo(m: E.M15, t: pd.DataFrame, seeds: int, split_ns: int, grid_ns: np.nd
                          "net_return_pct": (np.prod(1 + 0.01 * x) - 1) * 100})
         paths[seed] = equity_on_grid(xns, r, grid_ns)
     return rows, paths
+
+
+def controls(m: E.M15, t: pd.DataFrame, seeds: int = 200) -> list[dict]:
+    """Sanity controls for the placebo, same stop/TP geometry as the real trades:
+    random side at a uniformly random time (should be ~ minus costs), the zone's side and the
+    opposite side at a random time inside the zone's life, and the zone's side at activation."""
+    side = t["side"].to_numpy()
+    R_ = t["R"].to_numpy()
+    tpd = side * (t["tp"].to_numpy() - t["entry_price"].to_numpy())
+    lo = t["zone_active_idx"].to_numpy()
+    hi = np.maximum(t["zone_expiry_idx"].to_numpy(), lo + 1)
+
+    def mean_r(k, sd):
+        out = np.empty(len(t))
+        for j in range(len(t)):
+            s, i = int(sd[j]), int(k[j])
+            e = m.ac[i] if s > 0 else m.bc[i]
+            _, xp, _ = E.simulate_exit(m, s, e - s * R_[j], e + s * tpd[j], i, False)
+            out[j] = s * (xp - e) / R_[j]
+        return out.mean()
+
+    acc = {"random side, uniform random time": [], "zone side, random time in zone life": [],
+           "opposite side, random time in zone life": []}
+    for seed in range(seeds):
+        rng = np.random.default_rng(50_000 + seed)
+        k = rng.integers(lo, hi)
+        acc["zone side, random time in zone life"].append(mean_r(k, side))
+        acc["opposite side, random time in zone life"].append(mean_r(k, -side))
+        ku = rng.integers(1000, m.n - 5000, len(t))
+        acc["random side, uniform random time"].append(mean_r(ku, rng.choice([-1, 1], len(t))))
+    rows = [{"control": c, "mean_exp_R": float(np.mean(v)), "p5": float(np.percentile(v, 5)),
+             "p95": float(np.percentile(v, 95)), "seeds": seeds} for c, v in acc.items()]
+    rows.append({"control": "zone side, at zone activation", "mean_exp_R": mean_r(lo, side),
+                 "p5": np.nan, "p95": np.nan, "seeds": 1})
+    rows.append({"control": "real zone trades", "mean_exp_R": float(t["r"].mean()), "p5": np.nan,
+                 "p95": np.nan, "seeds": 0})
+    return rows
 
 
 def main():
@@ -191,6 +226,12 @@ def main():
                            ("trades", "win_rate", "expectancy_R", "profit_factor", "total_R")}})
     pr = pd.DataFrame(prow)
     pr.to_csv(f"{args.out}/placebo.csv", index=False)
+    ctl = []
+    for p in P.PAIRS:
+        for r in controls(data[p]["m"], trades[(R.BASE, p)]):
+            ctl.append({"combo": R.cname(R.BASE), "pair": p, **r})
+    pd.DataFrame(ctl).to_csv(f"{args.out}/controls.csv", index=False)
+    print(f"controls done ({time.time() - t0:.0f}s)", flush=True)
     bd = pd.DataFrame(bd)
     bd.to_csv(f"{args.out}/breakdowns.csv", index=False)
     run = {"start": str(R.START), "end": str(end), "split": str(split), "combos_tested": len(R.COMBOS),
@@ -209,8 +250,9 @@ def write_report(out, run, sw, rank, plat, pr, bd, cnt):
     A(f"Period {run['start'][:10]} to {run['end'][:16]} UTC, in-sample to {run['split'][:10]} (60%), "
       f"out-of-sample after. **Combos tested: {run['combos_tested']} per pair.** No day filter: demand and "
       "supply zones every day. Same zones, entries, exits, costs, swap and one-position rule as the macro study.\n")
-    A("Benchmark: random-entry placebo, same side / stop distance / TP distance, random 15m close in the "
-      f"same calendar month, {run['seeds']} seeds. Placebo comparisons are without swap.\n")
+    A("Benchmark: random-entry placebo, same side / stop distance / TP distance, entered at a random 15m close "
+      f"inside the same zone's life (impulse close to 50-bar expiry), {run['seeds']} seeds. Only the entry timing "
+      "differs. Placebo comparisons are without swap.\n")
     A("## Verdict\n\n<!-- VERDICT -->\n")
     A("## In-sample ranking (no filter, with swap)\n")
     r = rank.reset_index().rename(columns={"index": "combo"})
@@ -262,6 +304,11 @@ def write_report(out, run, sw, rank, plat, pr, bd, cnt):
     A(md(pd.DataFrame(rows), 3))
     for n in focus:
         A(f"\n![{n}](charts/equity_{n}.png)\n")
+    if os.path.exists(f"{out}/controls.csv"):
+        A("\n## Placebo controls (base combo, no swap, same stop/TP geometry as the real trades)\n")
+        A("Random side at random times shows the cost floor; the zone side vs the opposite side inside the "
+          "zone's life shows what price does after the impulse.\n")
+        A(md(pd.read_csv(f"{out}/controls.csv"), 3))
     A("\n## USDJPY with and without trades open within +/-3 trading days of MoF interventions (with swap)\n")
     x = sw[sw.combo.isin(focus) & (sw.pair == "USDJPY") & sw.swap]
     A(md(x.pivot_table(index=["combo", "period"], columns="intervention",

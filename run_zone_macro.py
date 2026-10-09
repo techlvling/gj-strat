@@ -68,6 +68,8 @@ def pair_candidates(d: dict, markup: float):
         book = E.make_book(z, m)
         for ver, ex in itertools.product(VERSIONS, EXITS):
             c, st = E.candidates(m, book, ver, ex)
+            c["zone_active_idx"] = book.a_idx[c["zone"].to_numpy()]
+            c["zone_expiry_idx"] = np.minimum(book.e_idx[c["zone"].to_numpy()], m.n - 1)
             c["entry_ns"] = m.t[c["entry_idx"].to_numpy()]
             if ver == "B":
                 c["entry_ns"] += E.NS_15M                          # at the trigger candle's close

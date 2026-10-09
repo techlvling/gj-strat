@@ -1,0 +1,11 @@
+combo,pair,control,mean_exp_R,p5,p95,seeds
+K2_full_A_2R,USDJPY,"random side, uniform random time",-0.017867221591864796,-0.11958477896849862,0.08021530838530565,200
+K2_full_A_2R,USDJPY,"zone side, random time in zone life",-0.1590712729266878,-0.24609207537654262,-0.07079335245581694,200
+K2_full_A_2R,USDJPY,"opposite side, random time in zone life",0.12233971423396152,0.013721114118223904,0.2245832925542481,200
+K2_full_A_2R,USDJPY,"zone side, at zone activation",-0.45969641165691894,,,1
+K2_full_A_2R,USDJPY,real zone trades,-0.07287948670694697,,,0
+K2_full_A_2R,EURUSD,"random side, uniform random time",-0.02917944545851929,-0.12256955375860078,0.07223343774476819,200
+K2_full_A_2R,EURUSD,"zone side, random time in zone life",-0.18257423549686444,-0.27017291501057566,-0.08799195021568203,200
+K2_full_A_2R,EURUSD,"opposite side, random time in zone life",0.1212745466771219,0.025160248928204353,0.2223010495354188,200
+K2_full_A_2R,EURUSD,"zone side, at zone activation",-0.29587295535558256,,,1
+K2_full_A_2R,EURUSD,real zone trades,0.0227379470462107,,,0
