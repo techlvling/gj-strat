@@ -249,8 +249,8 @@ def main():
            "slippage per fill takes roughly 0.06 R per trade.\n",
            "* **On the firm's rules (8% + 6%, 10% max loss, 4% daily, 3 days) rule 8 sizing never "
            "passes and never fails.** Risk is 2.5% of the cushion ($250 on a fresh 100K), so a 2R win is "
-           f"+$500 against an $8,000 target; the balance drifts down (median P/L {drift.iloc[-1]["median P/L $"]:+,.0f} USD "
-           f"after a year) and no start date ever reaches +8% (best peak {drift.iloc[-1]["best peak of any start $"]:+,.0f} USD). "
+           f"+$500 against an $8,000 target; the balance drifts down (median P/L {drift.iloc[-1]['median P/L $']:+,.0f} USD "
+           f"after a year) and no start date ever reaches +8% (best peak {drift.iloc[-1]['best peak of any start $']:+,.0f} USD). "
            "With a fixed 1% of balance instead, most challenges fail inside a year "
            f"({fixed.iloc[-1]['fail <= 365d %']:.0f}% fail vs {fixed.iloc[-1]['pass <= 365d %']:.0f}% pass). "
            "On a $2,000-cushion futures account the $50 budget is below one MNQ on every signal since 2020.\n",
