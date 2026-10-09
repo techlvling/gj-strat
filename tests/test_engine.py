@@ -558,3 +558,46 @@ def test_index_price_scale_and_pip():
     from gjstrat.data import pip_size, price_scale
     assert price_scale("JPNIDXJPY") == 1000.0 and pip_size("JPNIDXJPY") == 1.0
     assert price_scale("USATECHIDXUSD") == 1000.0 and pip_size("USATECHIDXUSD") == 1.0
+
+
+# ----------------------------------------------------------------- daily trend following
+from gjstrat.trend import donchian, ma_cross, pair_returns, tsmom_targets, weights
+
+
+def _daily(prices, start="2024-01-01"):
+    idx = pd.bdate_range(start, periods=len(prices))
+    c = pd.Series(prices, index=idx, dtype=float)
+    return pd.DataFrame({"c": c - 0.0001, "ac": c + 0.0001, "mid": c})
+
+
+def test_trend_signals_use_only_past_closes():
+    c = pd.Series(np.r_[np.linspace(1.0, 1.2, 60), np.linspace(1.2, 1.0, 60)],
+                  index=pd.bdate_range("2024-01-01", periods=120))
+    cut = c.copy()
+    cut.iloc[80:] = 9.9                                       # future prices must not matter
+    for f in (lambda x: ma_cross(x, 5, 20), lambda x: donchian(x, 20, 10), lambda x: tsmom_targets(x, 20)):
+        assert f(c).iloc[:80].fillna(0).equals(f(cut).iloc[:80].fillna(0))
+    d = donchian(c, 20, 10)
+    assert d.iloc[30] == 1.0 and d.iloc[-1] == -1.0           # long in the rise, short in the fall
+    t = tsmom_targets(c, 20)
+    assert t.loc["2024-01-31"] == 1.0 and t.loc["2024-02-01"] == 1.0   # set at month end, held
+
+
+def test_trend_costs_on_trades_and_carry_sign():
+    d = _daily([1.0, 1.01, 1.02, 1.03])
+    w = pd.Series([0.0, 1.0, 1.0, 0.0], index=d.index)
+    r = pair_returns(d, w, "EURUSD", None, commission_bp=0.0, slip_pips=0.0)
+    assert r.gross.iloc[2] == pytest.approx(0.01 / 1.01)          # held from day 1's close
+    assert r.cost.iloc[1] == pytest.approx(0.0001 / 1.01)         # half of a 2-pip spread
+    assert r.cost.iloc[3] == pytest.approx(0.0001 / 1.03) and r.cost.iloc[2] == 0
+    idx = pd.date_range("2023-01-01", "2025-01-01")
+    rates = {"EUR": pd.Series(4.0, idx), "USD": pd.Series(1.0, idx)}
+    r = pair_returns(d, w, "EURUSD", rates, markup_pct=0.0)
+    assert r.carry.iloc[2] == pytest.approx(1.0 * 3.0 / 100 / 365)   # long EUR earns 3% a year
+
+
+def test_trend_size_fixed_until_signal_changes():
+    sig = pd.Series([1, 1, 1, -1, -1], index=pd.bdate_range("2024-01-01", periods=5), dtype=float)
+    vol = pd.Series([0.01, 0.02, 0.04, 0.005, 0.01], index=sig.index)
+    w = weights(sig, vol, 0.01)
+    assert list(w) == [1.0, 1.0, 1.0, -2.0, -2.0]
