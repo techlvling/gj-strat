@@ -473,3 +473,28 @@ def test_gotobi_days():
     assert is_gotobi(pd.Timestamp("2024-02-09"))       # Sat 10th -> Fri 9th
     assert is_gotobi(pd.Timestamp("2024-01-31"))       # month end
     assert not is_gotobi(pd.Timestamp("2024-01-08"))
+
+
+from gjstrat.data import synthetic_market
+from gjstrat.patterns import daily_table, local_idx, london_fix_fade, month_end_days, ny_open_momentum
+
+
+def test_local_idx_follows_daylight_saving():
+    m = synthetic_market(days=200)
+    winter, summer = pd.Timestamp("2024-01-15"), pd.Timestamp("2024-07-15")
+    assert m.ts(local_idx(m, winter, 16, 0, "Europe/London")) == winter + pd.Timedelta(hours=16)
+    assert m.ts(local_idx(m, summer, 16, 0, "Europe/London")) == summer + pd.Timedelta(hours=15)
+    assert m.ts(local_idx(m, summer, 10, 0, "America/New_York")) == summer + pd.Timedelta(hours=14)
+
+
+def test_month_end_days_and_flow_signals_have_no_lookahead():
+    m = synthetic_market(days=200)
+    d = daily_table(m)
+    ends = month_end_days(d)
+    assert pd.Timestamp("2024-05-31") in ends and pd.Timestamp("2024-06-28") in ends   # Jun 30 = Sun
+    for s in london_fix_fade(m, d, (17, 0), 0.25):
+        move = m.bo[s.start_i] - m.bo[s.start_i - 60]                     # the 15:00-16:00 move
+        assert (s.side == "SELL") == (move > 0)
+        assert s.exit_by_i - s.start_i == 60
+    for s in ny_open_momentum(m, d, (16, 0), 0.5):
+        assert (s.side == "BUY") == (m.bo[s.start_i] > m.bo[s.start_i - 30])

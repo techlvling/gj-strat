@@ -247,3 +247,79 @@ def trend_pullback(m: Market, d: pd.DataFrame, k_atr: float, sl_atr: float, rr: 
             out.append(Signal(day, "SELL", s0, "limit", r.prev_close + k_atr * r.atr20, s1, sl_d,
                               rr * sl_d, int(r.end_i), "pullback"))
     return out
+
+
+# --------------------------------------------------------------------------- flow / session patterns
+LDN = "Europe/London"
+
+
+def local_idx(m: Market, day: pd.Timestamp, hh: int, mm: int, tz: str) -> int:
+    """Grid index of `day` hh:mm wall-clock time in `tz` (daylight saving aware)."""
+    t = (day + pd.Timedelta(hours=hh, minutes=mm)).tz_localize(tz).tz_convert("UTC").tz_localize(None)
+    return m.idx(t)
+
+
+def month_end_days(d: pd.DataFrame) -> pd.DatetimeIndex:
+    """Last weekday session label of each month in the daily table."""
+    wk = d.index[d.index.dayofweek < 5]
+    s = pd.Series(wk, index=wk)
+    return pd.DatetimeIndex(s.groupby([wk.year, wk.month]).max().to_numpy())
+
+
+def month_end_fix(m: Market, d: pd.DataFrame, direction: str, exit_at: tuple[int, int],
+                  sl_atr: float = 0.5) -> list[Signal]:
+    """Last trading day of the month: at 14:00 London trade against ('fade') or with ('follow')
+    the month-to-date move (from the previous month's last close), exit at `exit_at` London."""
+    out = []
+    ends = month_end_days(d)
+    for k in range(1, len(ends)):
+        day = ends[k]
+        r = d.loc[day]
+        start = local_idx(m, day, 14, 0, LDN)
+        if start < 0 or start >= m.n:
+            continue
+        mtd = m.bo[start] - d.loc[ends[k - 1], "close"]
+        if mtd == 0:
+            continue
+        up = mtd > 0
+        side = ("SELL" if up else "BUY") if direction == "fade" else ("BUY" if up else "SELL")
+        out.append(Signal(day, side, start, "market", None, start + 1, sl_atr * r.atr20, None,
+                          local_idx(m, day, *exit_at, LDN), f"monthend-{direction}"))
+    return out
+
+
+def london_fix_fade(m: Market, d: pd.DataFrame, exit_at: tuple[int, int], sl_atr: float,
+                    min_move_atr: float = 0.2) -> list[Signal]:
+    """Every day: if 15:00-16:00 London moved at least `min_move_atr` x ATR20, trade against that
+    move at 16:00 London (the WM/R fix); exit at `exit_at` London."""
+    out = []
+    for day, r in d.iterrows():
+        if day.dayofweek >= 5:
+            continue
+        a, b = local_idx(m, day, 15, 0, LDN), local_idx(m, day, 16, 0, LDN)
+        if a < 0 or b >= m.n:
+            continue
+        move = m.bo[b] - m.bo[a]
+        if abs(move) < min_move_atr * r.atr20:
+            continue
+        out.append(Signal(day, "SELL" if move > 0 else "BUY", b, "market", None, b + 1,
+                          sl_atr * r.atr20, None, local_idx(m, day, *exit_at, LDN), "ldnfix-fade"))
+    return out
+
+
+def ny_open_momentum(m: Market, d: pd.DataFrame, exit_at: tuple[int, int], sl_atr: float) -> list[Signal]:
+    """Every day: trade in the direction of the 09:30-10:00 New York move at 10:00 NY; exit at
+    `exit_at` New York."""
+    out = []
+    for day, r in d.iterrows():
+        if day.dayofweek >= 5:
+            continue
+        a, b = local_idx(m, day, 9, 30, NY), local_idx(m, day, 10, 0, NY)
+        if a < 0 or b >= m.n:
+            continue
+        move = m.bo[b] - m.bo[a]
+        if move == 0:
+            continue
+        out.append(Signal(day, "BUY" if move > 0 else "SELL", b, "market", None, b + 1,
+                          sl_atr * r.atr20, None, local_idx(m, day, *exit_at, NY), "nyopen-mom"))
+    return out
