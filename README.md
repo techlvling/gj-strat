@@ -10,6 +10,7 @@ python run_backtest.py              # downloads Dukascopy data into data/ (cache
 python compare_versions.py          # base settings: A vs B vs C (fade) -> results/version_comparison/
 python run_majors.py                # A and B on the 7 majors (+ GBPJPY) -> results/majors/
 python run_majors.py --sl-box 1 --out results/majors_box_sl   # SL = that day's box + spread
+python run_nas_orb.py               # Nas100 15-min opening-range breakout -> results/nas_orb/
 ```
 
 Version C ("fade"): the first break of the box is not traded. It is followed virtually with
@@ -45,6 +46,7 @@ Results go to `results/`: `REPORT.md` (all tables + verdict), `charts/`, `trade_
 | `gjstrat/engine.py` | Per-day state machine: range → OCO stops → trade → 6-bar wait → re-entry |
 | `gjstrat/accounting.py` | 1% compounding, 0.01-lot rounding, USDJPY pip value, stats, breakdowns |
 | `run_backtest.py` | Base A vs B, Version A sweep, IS/OOS ranking, plateau check, charts, report |
+| `gjstrat/nas_orb.py` | Nas100 New York 15-min opening-range breakout, NYSE holidays, rule-8 sizing, prop challenge |
 | `tests/test_engine.py` | One test per rule (UTC-midnight range, gaps, SL-first, BE, re-entry A/B, expiry, skips) |
 
 ## Modelling decisions
