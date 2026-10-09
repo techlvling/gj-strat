@@ -11,6 +11,8 @@ The reel does not give its management, so it is a parameter:
     triggered on ask), so 1R = distance from the fill to that stop, spread included
   * stop_atr = optional floor: the stop sits at least stop_atr x ATR(14) of 5-minute bid
     candles (taken at the signal close) away from the fill
+  * or a stop that ignores the candle: sl_pips = fixed pips, sl_atr = k x ATR(14); both
+    + the entry spread (1R = SL + spread, as in gjstrat.engine)
   * rr = target in R (None = no target)
   * ema_trail = also exit at the next 1-minute open once a 5-minute close crosses back over
     the EMA (long: close < EMA, short: close > EMA)
@@ -39,6 +41,8 @@ class CandleParams:
     rr: float | None = 1.0
     ema_trail: bool = False
     stop_atr: float | None = None
+    sl_pips: float | None = None
+    sl_atr: float | None = None
     ema_len: int = 12
     open_hm: tuple[int, int] = (9, 30)
     flat_hm: tuple[int, int] = (16, 0)
@@ -46,8 +50,20 @@ class CandleParams:
     @property
     def label(self) -> str:
         tgt = "EOD" if self.rr is None else f"{self.rr:g}R"
-        stop = "" if self.stop_atr is None else f"stop>={self.stop_atr:g}ATR "
-        return stop + tgt + ("+EMAtrail" if self.ema_trail else "")
+        return self.stop_label + (" " if self.stop_label else "") + tgt \
+            + ("+EMAtrail" if self.ema_trail else "")
+
+    @property
+    def stop_label(self) -> str:
+        if self.sl_pips is not None:
+            return f"SL{self.sl_pips:g}p"
+        if self.sl_atr is not None:
+            return f"SL{self.sl_atr:g}ATR"
+        return "" if self.stop_atr is None else f"stop>={self.stop_atr:g}ATR"
+
+    def __post_init__(self):
+        if sum(x is not None for x in (self.stop_atr, self.sl_pips, self.sl_atr)) > 1:
+            raise ValueError("set at most one of stop_atr, sl_pips, sl_atr")
 
 
 def ema5(m: Market, length: int = 12) -> np.ndarray:
@@ -117,7 +133,7 @@ def run_candle(m: Market, p: CandleParams, days: list[pd.Timestamp],
                ema: np.ndarray | None = None, atr: np.ndarray | None = None
                ) -> tuple[list[Trade], dict]:
     ema = ema5(m, p.ema_len) if ema is None else ema
-    if p.stop_atr is not None and atr is None:
+    if (p.stop_atr is not None or p.sl_atr is not None) and atr is None:
         atr = atr5(m)
     c = dict(days=0, no_data=0, flat_close=0, bad_risk=0, trades=0)
     trades: list[Trade] = []
@@ -147,7 +163,11 @@ def run_candle(m: Market, p: CandleParams, days: list[pd.Timestamp],
         sgn = 1 if side == "BUY" else -1
         if p.stop_atr is not None and risk < p.stop_atr * atr[g]:
             risk = p.stop_atr * atr[g]
-            sl = px - sgn * risk
+        elif p.sl_pips is not None:
+            risk = p.sl_pips * m.pip + spread
+        elif p.sl_atr is not None:
+            risk = p.sl_atr * atr[g] + spread
+        sl = px - sgn * risk
         if risk <= EPS:
             c["bad_risk"] += 1
             continue

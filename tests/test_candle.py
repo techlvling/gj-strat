@@ -134,3 +134,17 @@ def test_direction_move_is_signed_mid_to_mid_in_pips():
     bar(m, "16:00", 1.1030, 1.1030, 1.1030, 1.1030)
     mv = direction_moves(m, [DAY], ema5(m))
     assert mv == pytest.approx([20.0])                # mid 1.10105 -> 1.10305
+
+
+def test_fixed_pip_and_atr_stops_ignore_the_candle_and_add_the_spread():
+    m = up_candle(flat_market())
+    atr = np.full(m.n // 5, 0.0010)
+    (t,), _ = run_candle(m, CandleParams(rr=3, sl_pips=10), [DAY], atr=atr)
+    assert t.risk == pytest.approx(0.0011)           # 10 pips + 1 pip spread
+    (t,), _ = run_candle(m, CandleParams(rr=3, sl_atr=1.5), [DAY], atr=atr)
+    assert t.risk == pytest.approx(0.0016)
+
+
+def test_only_one_stop_rule_at_a_time():
+    with pytest.raises(ValueError):
+        CandleParams(sl_pips=10, sl_atr=2)

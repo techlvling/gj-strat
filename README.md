@@ -47,6 +47,7 @@ Results go to `results/`: `REPORT.md` (all tables + verdict), `charts/`, `trade_
 | `run_backtest.py` | Base A vs B, Version A sweep, IS/OOS ranking, plateau check, charts, report |
 | `gjstrat/candle.py` | NY-open 5-min candle vs 12 EMA (the "one candle, one EMA" reel), candle / ATR stop |
 | `run_candle_ema.py` | That rule on all 24 stored FX pairs, last 3 years, 9 exits -> `results/candle_ema/` |
+| `run_candle_grid.py` | Same rule, any stop × target grid (`--sl candle atr2 pips15 --rr 1 3 eod`), IS/OOS -> `results/candle_grid/` |
 | `tests/test_engine.py` | One test per rule (UTC-midnight range, gaps, SL-first, BE, re-entry A/B, expiry, skips) |
 
 ## Modelling decisions
