@@ -498,3 +498,9 @@ def test_month_end_days_and_flow_signals_have_no_lookahead():
         assert s.exit_by_i - s.start_i == 60
     for s in ny_open_momentum(m, d, (16, 0), 0.5):
         assert (s.side == "BUY") == (m.bo[s.start_i] > m.bo[s.start_i - 30])
+
+
+def test_gold_price_scale_and_pip():
+    from gjstrat.data import pip_size, price_scale
+    assert price_scale("XAUUSD") == 1000.0 and pip_size("XAUUSD") == 0.01
+    assert price_scale("EURUSD") == 100000.0 and pip_size("CADJPY") == 0.01
