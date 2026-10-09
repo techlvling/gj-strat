@@ -1,0 +1,46 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.16, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python
+cachedir: .pytest_cache
+rootdir: /home/user/gj-strat
+plugins: anyio-4.15.1
+collecting ... collected 37 items
+
+tests/test_dragonfly.py::test_leg_detected_on_completion_candle_with_frozen_values PASSED
+tests/test_dragonfly.py::test_leg_not_usable_before_completion_candle_closes PASSED
+tests/test_dragonfly.py::test_leg_too_small_is_not_a_signal PASSED
+tests/test_dragonfly.py::test_leg_requires_H_on_candle_before_completion PASSED
+tests/test_dragonfly.py::test_ema_matches_definition PASSED
+tests/test_dragonfly.py::test_15m_bar_sees_only_closed_1h_bars PASSED
+tests/test_dragonfly.py::test_trend_uses_only_closed_1h_bars PASSED
+tests/test_dragonfly.py::test_trend_flat_when_ema_slope_too_small PASSED
+tests/test_dragonfly.py::test_15m_aggregation_drops_zero_volume_minutes PASSED
+tests/test_dragonfly.py::test_limit_fills_at_limit_intrabar PASSED
+tests/test_dragonfly.py::test_limit_gap_fill_at_open PASSED
+tests/test_dragonfly.py::test_stop_gap_fills_at_open PASSED
+tests/test_dragonfly.py::test_cancel_after_12_candles PASSED
+tests/test_dragonfly.py::test_touch_on_12th_candle_still_fills PASSED
+tests/test_dragonfly.py::test_cancel_on_close_beyond_786 PASSED
+tests/test_dragonfly.py::test_cancel_when_trend_turns_off PASSED
+tests/test_dragonfly.py::test_same_candle_sl_and_tp_resolves_to_sl PASSED
+tests/test_dragonfly.py::test_same_candle_sl_and_be_trigger_resolves_to_sl PASSED
+tests/test_dragonfly.py::test_no_tp_on_fill_candle_but_sl_counts PASSED
+tests/test_dragonfly.py::test_tp_t1_and_t2_levels PASSED
+tests/test_dragonfly.py::test_break_even_skipped_when_target_under_1R PASSED
+tests/test_dragonfly.py::test_break_even_applied_when_target_beyond_1R PASSED
+tests/test_dragonfly.py::test_small_stop_is_skipped_and_counted PASSED
+tests/test_dragonfly.py::test_sell_logic_mirrors_buy_logic[limit-0.382-T1] PASSED
+tests/test_dragonfly.py::test_sell_logic_mirrors_buy_logic[limit-0.5-T2] PASSED
+tests/test_dragonfly.py::test_sell_logic_mirrors_buy_logic[limit-0.618-T2] PASSED
+tests/test_dragonfly.py::test_sell_logic_mirrors_buy_logic[chase-0.382-T1] PASSED
+tests/test_dragonfly.py::test_sell_logic_mirrors_buy_logic[chase-0.5-T2] PASSED
+tests/test_dragonfly.py::test_sell_logic_mirrors_buy_logic[chase-0.618-T2] PASSED
+tests/test_dragonfly.py::test_trend_filter_mirrors PASSED
+tests/test_dragonfly.py::test_one_pending_order_at_a_time PASSED
+tests/test_dragonfly.py::test_one_position_at_a_time PASSED
+tests/test_dragonfly.py::test_new_signal_allowed_after_order_cancelled PASSED
+tests/test_dragonfly.py::test_random_resolver_matches_engine_exit_logic[0.6-1] PASSED
+tests/test_dragonfly.py::test_random_resolver_matches_engine_exit_logic[0.6--1] PASSED
+tests/test_dragonfly.py::test_random_resolver_matches_engine_exit_logic[1.8-1] PASSED
+tests/test_dragonfly.py::test_random_resolver_matches_engine_exit_logic[1.8--1] PASSED
+
+============================== 37 passed in 0.75s ==============================

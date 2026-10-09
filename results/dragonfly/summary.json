@@ -1,0 +1,215 @@
+{
+ "split": "2024-01-23 13:30:00",
+ "start": "2020-01-01 22:00:00",
+ "end": "2026-10-08 00:00:00",
+ "combos_tested": 6,
+ "top3": [
+  "R0.382_T2",
+  "R0.5_T2",
+  "R0.382_T1"
+ ],
+ "is_beats": {
+  "R0.382_T1": {
+   "avg_R_both_pairs": -0.07208481670554806,
+   "positive_both_pairs": false,
+   "beats_chase_both_pairs": false,
+   "beats_random_95pct_both_pairs": false,
+   "random_percentiles": {
+    "GBPJPY": 62.3,
+    "EURUSD": 27.700000000000003
+   },
+   "useful": false
+  },
+  "R0.382_T2": {
+   "avg_R_both_pairs": -0.04225742381755393,
+   "positive_both_pairs": false,
+   "beats_chase_both_pairs": false,
+   "beats_random_95pct_both_pairs": false,
+   "random_percentiles": {
+    "GBPJPY": 94.6,
+    "EURUSD": 66.4
+   },
+   "useful": false
+  },
+  "R0.5_T1": {
+   "avg_R_both_pairs": -0.08587275403496808,
+   "positive_both_pairs": false,
+   "beats_chase_both_pairs": false,
+   "beats_random_95pct_both_pairs": false,
+   "random_percentiles": {
+    "GBPJPY": 81.0,
+    "EURUSD": 48.0
+   },
+   "useful": false
+  },
+  "R0.5_T2": {
+   "avg_R_both_pairs": -0.07144735075706367,
+   "positive_both_pairs": false,
+   "beats_chase_both_pairs": false,
+   "beats_random_95pct_both_pairs": false,
+   "random_percentiles": {
+    "GBPJPY": 74.7,
+    "EURUSD": 68.30000000000001
+   },
+   "useful": false
+  },
+  "R0.618_T1": {
+   "avg_R_both_pairs": -0.13245799142761192,
+   "positive_both_pairs": false,
+   "beats_chase_both_pairs": false,
+   "beats_random_95pct_both_pairs": false,
+   "random_percentiles": {
+    "GBPJPY": 56.2,
+    "EURUSD": 51.6
+   },
+   "useful": false
+  },
+  "R0.618_T2": {
+   "avg_R_both_pairs": -0.10196034160763938,
+   "positive_both_pairs": false,
+   "beats_chase_both_pairs": false,
+   "beats_random_95pct_both_pairs": false,
+   "random_percentiles": {
+    "GBPJPY": 58.199999999999996,
+    "EURUSD": 90.7
+   },
+   "useful": false
+  }
+ },
+ "oos_beats": {
+  "R0.382_T2": {
+   "avg_R_both_pairs": -0.09108806540608101,
+   "positive_both_pairs": false,
+   "beats_chase_both_pairs": false,
+   "beats_random_95pct_both_pairs": false,
+   "random_percentiles": {
+    "GBPJPY": 74.1,
+    "EURUSD": 91.5
+   },
+   "useful": false
+  },
+  "R0.5_T2": {
+   "avg_R_both_pairs": -0.13528617882845898,
+   "positive_both_pairs": false,
+   "beats_chase_both_pairs": false,
+   "beats_random_95pct_both_pairs": false,
+   "random_percentiles": {
+    "GBPJPY": 83.2,
+    "EURUSD": 58.099999999999994
+   },
+   "useful": false
+  },
+  "R0.382_T1": {
+   "avg_R_both_pairs": -0.10088614594851567,
+   "positive_both_pairs": false,
+   "beats_chase_both_pairs": false,
+   "beats_random_95pct_both_pairs": false,
+   "random_percentiles": {
+    "GBPJPY": 82.69999999999999,
+    "EURUSD": 70.7
+   },
+   "useful": false
+  }
+ },
+ "gaps": {
+  "GBPJPY": {
+   "missing_weekday_15m_bars": 646,
+   "gap_episodes": 30,
+   "gaps_over_1h": 10,
+   "largest": [
+    [
+     "2023-12-31 22:00:00",
+     96
+    ],
+    [
+     "2024-12-31 22:00:00",
+     96
+    ],
+    [
+     "2025-12-31 22:00:00",
+     96
+    ],
+    [
+     "2020-12-31 22:00:00",
+     92
+    ],
+    [
+     "2024-12-25 08:00:00",
+     56
+    ],
+    [
+     "2025-12-25 08:00:00",
+     56
+    ],
+    [
+     "2023-12-25 08:00:00",
+     56
+    ],
+    [
+     "2020-12-25 07:30:00",
+     54
+    ],
+    [
+     "2023-12-24 22:00:00",
+     11
+    ],
+    [
+     "2023-01-01 22:00:00",
+     6
+    ]
+   ]
+  },
+  "EURUSD": {
+   "missing_weekday_15m_bars": 616,
+   "gap_episodes": 19,
+   "gaps_over_1h": 8,
+   "largest": [
+    [
+     "2023-12-31 22:00:00",
+     96
+    ],
+    [
+     "2024-12-31 22:00:00",
+     96
+    ],
+    [
+     "2025-12-31 22:00:00",
+     96
+    ],
+    [
+     "2020-12-31 22:00:00",
+     92
+    ],
+    [
+     "2024-12-25 08:00:00",
+     56
+    ],
+    [
+     "2023-12-25 08:00:00",
+     56
+    ],
+    [
+     "2025-12-25 08:00:00",
+     56
+    ],
+    [
+     "2020-12-25 08:00:00",
+     52
+    ],
+    [
+     "2023-12-24 22:00:00",
+     4
+    ],
+    [
+     "2024-10-09 23:15:00",
+     3
+    ]
+   ]
+  }
+ },
+ "flags": [
+  "In-sample pick R0.382_T2 FAILS out-of-sample (avg R <= 0 on at least one pair)",
+  "In-sample pick R0.5_T2 FAILS out-of-sample (avg R <= 0 on at least one pair)",
+  "In-sample pick R0.382_T1 FAILS out-of-sample (avg R <= 0 on at least one pair)"
+ ]
+}
