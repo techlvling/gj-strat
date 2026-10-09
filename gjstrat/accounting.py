@@ -4,7 +4,7 @@ Trade paths don't depend on account size, so the engine produces price-level tra
 this module replays them in time order against a compounding balance:
   * risk = risk_pct of the *closed* balance at entry (trades from different days can overlap)
   * lots = floor(risk_usd / (risk_pips * pip_value_per_lot) / 0.01) * 0.01, minimum 0.01
-  * pip value per 1.0 lot (100k base) = 100,000 x pip in the quote currency, converted to USD
+  * pip value per 1.0 lot (100k base; 100 oz gold) = contract size x pip in the quote currency, converted to USD
     with Market.quote_per_usd at entry (sizing) and at exit (realised P/L)
   * commission is USD per lot round turn
 R per trade = price move / 1R distance, minus commission, plus swap (if a SwapModel is given),
@@ -15,10 +15,9 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from .data import Market
+from .data import Market, contract_size
 from .engine import IST, Trade
 
-LOT = 100_000
 
 
 def account(trades: list[Trade], m: Market, start_balance: float = 10_000.0,
@@ -36,6 +35,7 @@ def account(trades: list[Trade], m: Market, start_balance: float = 10_000.0,
     # entries; a trade stopped out on its own entry bar exits after its entry.
     ev = sorted([(t.entry_i, 1, k) for k, t in enumerate(trades)] +
                 [(t.exit_i, 0 if t.exit_i > t.entry_i else 2, k) for k, t in enumerate(trades)])
+    LOT = contract_size(sym) if sym else 100_000
     bal = start_balance
     lots = np.zeros(len(trades))
     pnl = np.zeros(len(trades))

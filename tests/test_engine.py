@@ -519,6 +519,20 @@ def test_gold_price_scale_and_pip():
     assert price_scale("EURUSD") == 100000.0 and pip_size("CADJPY") == 0.01
 
 
+def test_gold_lot_is_100_oz():
+    from gjstrat.data import contract_size
+    from gjstrat.engine import Trade
+    assert contract_size("XAUUSD") == 100 and contract_size("EURUSD") == 100_000
+    m = flat_market(2000.0)
+    m.pip, m.quote_per_usd = 0.01, np.ones(m.n)
+    t = Trade(DAY, "BUY", 1, i_of(m, "07:00"), 2000.0, i_of(m, "08:00"), 2010.0, "TP", 5.0, 0.3,
+              0.0, False, False)
+    log = account([t], m, 10_000, risk_pct=1.0, commission=7, sym="XAUUSD")
+    # $100 risk / ($5 x 100 oz per lot) = 0.2 lots; +$10 x 20 oz = $200 - $1.40 commission
+    assert log.lots[0] == pytest.approx(0.2)
+    assert log.pnl_usd[0] == pytest.approx(200 - 1.4)
+
+
 from gjstrat.patterns import _fill, contraction_breakout, london_breakout, night_reversion, ny_orb, prevday_breakout
 
 

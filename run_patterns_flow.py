@@ -10,10 +10,11 @@ Pre-declared grid (12 setups per pair, 60 tests), London / New York wall-clock t
 Costs, periods and survival rule as run_patterns.py (design 2010-2017 avg R > 0 with t >= 2
 AND check 2018-2023 avg R > 0; holdout 2024-2026 shown only for survivors).
 
-    python run_patterns_flow.py
+    python run_patterns_flow.py [--pairs XAUUSD --out results/patterns_flow_xauusd]
 """
 from __future__ import annotations
 
+import argparse
 import os
 from datetime import date
 from multiprocessing import Pool
@@ -48,10 +49,16 @@ def grid():
 
 
 def main():
+    global OUT
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--pairs", nargs="*", default=PAIRS)
+    ap.add_argument("--out", default=OUT)
+    a = ap.parse_args()
+    pairs, OUT = a.pairs, a.out
     os.makedirs(OUT, exist_ok=True)
     rp.SWAP = SwapModel.from_fred("rates", 1.0)
     frames = []
-    for sym in PAIRS:
+    for sym in pairs:
         rp.SYM = sym
         rp.M = build_market(sym, date(2010, 1, 1), date(2026, 10, 7), "data/raw",
                             f"data/{sym.lower()}_2010-01-01_2026-10-07.npz")
@@ -75,11 +82,11 @@ def main():
     show.index = [f"{a} · {b}" for a, b in show.index]
     show.index.name = "Setup · pair"
     surv = res[res.survives]
-    rep = ["# Flow / session pattern search — 5 pairs, 2010–2026\n",
-           "12 pre-declared setups per pair, 60 tests (see run_patterns_flow.py). Costs: $7/lot, swap "
+    rep = [f"# Flow / session pattern search — {', '.join(pairs)}, 2010–2026\n",
+           f"12 pre-declared setups per pair, {len(res)} tests (see run_patterns_flow.py). Costs: $7/lot, swap "
            "(+1% markup), 0.2 pip slippage. Survival rule fixed before running: design (2010–2017) avg R > 0 "
            "with t ≥ 2 AND check (2018–2023) avg R > 0. Holdout (2024–2026) only for survivors.\n",
-           f"**Survivors: {len(surv)} of {len(res)}.** With 60 tries, 1–2 would pass by luck.\n",
+           f"**Survivors: {len(surv)} of {len(res)}.** About {len(res) / 50:.0f} would pass by luck.\n",
            fmt_table(show, ".3f")]
     if len(surv):
         hcols = [c for c in res.columns if c.startswith(("design", "check", "holdout"))]

@@ -8,16 +8,17 @@ Pre-declared grid (40 tests), local wall-clock times, weekdays, market in / time
   H1 Tokyo   09:00-15:00 JST  : USDJPY, EURJPY, GBPJPY   (JPY home)       home-weak = BUY
   H2 Europe  08:00-13:00 LDN  : EURUSD, GBPUSD, EURJPY, GBPJPY (EUR/GBP home) home-weak = SELL
   H3 US      12:00-16:30 NY   : EURUSD, GBPUSD, USDJPY   (USD home, after London) home-weak =
-                                BUY EURUSD/GBPUSD, SELL USDJPY
+                                BUY EURUSD/GBPUSD, SELL USDJPY (and BUY XAUUSD, with --pairs XAUUSD)
   x direction home-weak / home-strong x SL 0.5 / 1.0 x ATR20 (wide: mostly time exits)
 Costs, periods and survival rule as run_patterns.py (design 2010-2017 avg R > 0 with t >= 2
 AND check 2018-2023 avg R > 0; holdout 2024-2026 shown only for survivors).
 Also reported: raw cost-free drift of each window in pips (design and check only).
 
-    python run_patterns_hours.py
+    python run_patterns_hours.py [--pairs XAUUSD --out results/patterns_hours_xauusd]
 """
 from __future__ import annotations
 
+import argparse
 import os
 from datetime import date
 from multiprocessing import Pool
@@ -42,7 +43,8 @@ WINDOWS = [
     ("H1 tokyo", (9, 0), (15, 0), TKY, {"USDJPY": "BUY", "EURJPY": "BUY", "GBPJPY": "BUY"}),
     ("H2 europe", (8, 0), (13, 0), LDN, {"EURUSD": "SELL", "GBPUSD": "SELL", "EURJPY": "SELL",
                                          "GBPJPY": "SELL"}),
-    ("H3 us", (12, 0), (16, 30), NY, {"EURUSD": "BUY", "GBPUSD": "BUY", "USDJPY": "SELL"}),
+    ("H3 us", (12, 0), (16, 30), NY, {"EURUSD": "BUY", "GBPUSD": "BUY", "USDJPY": "SELL",
+                                      "XAUUSD": "BUY"}),
 ]
 FLIP = {"BUY": "SELL", "SELL": "BUY"}
 
@@ -83,10 +85,16 @@ def raw_drift(m, d, sym):
 
 
 def main():
+    global OUT
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--pairs", nargs="*", default=PAIRS)
+    ap.add_argument("--out", default=OUT)
+    a = ap.parse_args()
+    pairs, OUT = a.pairs, a.out
     os.makedirs(OUT, exist_ok=True)
     rp.SWAP = SwapModel.from_fred("rates", 1.0)
     frames, drift = [], []
-    for sym in PAIRS:
+    for sym in pairs:
         rp.SYM = sym
         rp.M = build_market(sym, date(2010, 1, 1), date(2026, 10, 7), "data/raw",
                             f"data/{sym.lower()}_2010-01-01_2026-10-07.npz")
@@ -114,7 +122,7 @@ def main():
     show.index = [f"{a} · {b}" for a, b in show.index]
     show.index.name = "Setup · pair"
     surv = res[res.survives]
-    rep = ["# Home-hours drift test — 5 pairs, 2010–2026\n",
+    rep = [f"# Home-hours drift test — {', '.join(pairs)}, 2010–2026\n",
            f"{len(res)} pre-declared tests (see run_patterns_hours.py). Costs: $7/lot, swap (+1% markup), "
            "0.2 pip slippage. Survival rule fixed before running: design (2010–2017) avg R > 0 with t ≥ 2 "
            "AND check (2018–2023) avg R > 0. Holdout (2024–2026) only for survivors.\n",
