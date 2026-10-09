@@ -1,0 +1,5 @@
+{'pair': 'XAUUSD', 'design trades': 2039, 'design avg R': np.float64(-0.0596132417851888), 'design t': np.float64(-0.9900396383485752), 'design max DD % (0.5%)': np.float64(61.67080003506362), 'check trades': 1615, 'check avg R': np.float64(-0.0613655108359133), 'check t': np.float64(-0.913558346008619), 'check max DD % (0.5%)': np.float64(68.7503181056579), 'holdout trades': 833, 'holdout avg R': np.float64(0.22771668667466985), 'holdout t': np.float64(2.1823601019142314), 'holdout max DD % (0.5%)': np.float64(19.422426833016047)}
+        design trades  design avg R  design t  design max DD % (0.5%)  check trades  check avg R  check t  check max DD % (0.5%)  holdout trades  holdout avg R  holdout t  holdout max DD % (0.5%)  survives
+pair                                                                                                                                                                                                         
+XAUUSD           2039         -0.06     -0.99                  61.671          1615       -0.061   -0.914                  68.75             833          0.228      2.182                   19.422     False
+EXIT 0

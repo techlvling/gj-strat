@@ -1,0 +1,2 @@
+pair,design trades,design avg R,design t,design max DD % (0.5%),check trades,check avg R,check t,check max DD % (0.5%),holdout trades,holdout avg R,holdout t,holdout max DD % (0.5%),survives
+XAUUSD,2039,-0.0596132417851888,-0.9900396383485752,61.67080003506362,1615,-0.0613655108359133,-0.913558346008619,68.7503181056579,833,0.22771668667466985,2.1823601019142314,19.422426833016047,False

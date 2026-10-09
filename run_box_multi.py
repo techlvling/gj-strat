@@ -4,10 +4,11 @@ other pairs over 2010-2026, with all costs ($7/lot, swap +1% markup, 0.2 pip sli
 Same periods and survival rule as the pattern search, fixed before running:
 design 2010-2017 avg R > 0 with t >= 2 AND check 2018-2023 avg R > 0. Holdout 2024-2026 shown.
 
-    python run_box_multi.py
+    python run_box_multi.py [--pairs XAUUSD --out results/box_multi_xauusd]
 """
 from __future__ import annotations
 
+import argparse
 import os
 from datetime import date
 
@@ -28,10 +29,16 @@ GREEN = Params(rr=9, sl_pips=30, be_trigger=3, be_plus=5, version="B", sl_box_mu
 
 
 def main():
+    global OUT
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--pairs", nargs="*", default=PAIRS)
+    ap.add_argument("--out", default=OUT)
+    a = ap.parse_args()
+    pairs, OUT = a.pairs, a.out
     os.makedirs(OUT, exist_ok=True)
     swap = SwapModel.from_fred("rates", 1.0)
     rows = []
-    for sym in PAIRS:
+    for sym in pairs:
         m = build_market(sym, date(2010, 1, 1), date(2026, 10, 7), "data/raw",
                          f"data/{sym.lower()}_2010-01-01_2026-10-07.npz")
         days = trading_days(m, start="2010-01-01")
