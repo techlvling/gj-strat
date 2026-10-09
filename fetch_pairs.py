@@ -10,6 +10,7 @@ data/raw. Each pair that finishes is packed into datastore/<PAIR>.tar (one file,
 are already LZMA-compressed), then committed and pushed on the current branch.
 """
 import argparse
+import fcntl
 import glob
 import os
 import subprocess
@@ -39,6 +40,13 @@ def git(*args: str) -> None:
 
 
 def _commit_push(path: str, msg: str) -> None:
+    """Commit and push one tar. A lock file serialises this across parallel downloaders."""
+    with open(".git/fetch_pairs.lock", "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        _commit_push_locked(path, msg)
+
+
+def _commit_push_locked(path: str, msg: str) -> None:
     git("add", path)
     git("commit", "-q", "-m", msg + TRAILER)
     branch = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], check=True,
