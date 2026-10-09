@@ -60,8 +60,15 @@ def _write_tar(path: str, files: list[str]) -> None:
 
 
 def save(sym: str) -> None:
-    files = sorted(glob.glob(f"{RAW}/{sym}_*.bi5"))
+    """datastore/<SYM>.tar with the files not already in a per-year <SYM>_<YEAR>.tar."""
     path = f"{STORE}/{sym}.tar"
+    stored = set()
+    for t in glob.glob(f"{STORE}/{sym}_*.tar"):
+        with tarfile.open(t) as tar:
+            stored.update(tar.getnames())
+    files = [f for f in sorted(glob.glob(f"{RAW}/{sym}_*.bi5")) if os.path.basename(f) not in stored]
+    if not files:
+        return
     if os.path.exists(path):
         with tarfile.open(path) as tar:
             if len(tar.getnames()) == len(files):
