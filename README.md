@@ -111,3 +111,7 @@ moment -> `results/fade/REPORT.md`. Rules in `zonemacro/fade.py`, tests in `test
 `python run_jpy_crosses.py` — the USDJPY K3 fade with rules frozen, tested unchanged on EURJPY,
 GBPJPY, AUDJPY, CADJPY and CHFJPY against pass criteria fixed before running ->
 `results/fade_jpy_crosses/REPORT.md`.
+
+`python run_single.py --pair XAUUSD` — the zones-alone (24) and fade (18) sweeps on one
+instrument, same protocol and benchmarks -> `results/xauusd/REPORT.md`. Gold swap assumes a 0%
+lease rate against fed funds.

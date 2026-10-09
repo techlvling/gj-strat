@@ -1,0 +1,7 @@
+study,combo,control,mean_exp_R,p5,p95,seeds
+zones,K2_full_A_2R,"random side, uniform random time",-0.059252303090635776,-0.1627997679666954,0.03548100836332815,200.0
+zones,K2_full_A_2R,"zone side, random time in zone life",-0.1798235208543087,-0.2714954099482466,-0.08213933789524315,200.0
+zones,K2_full_A_2R,"opposite side, random time in zone life",0.07081209047471106,-0.007087678458943122,0.16229135423118565,200.0
+zones,K2_full_A_2R,"zone side, at zone activation",-0.4383376607934128,,,1.0
+zones,K2_full_A_2R,real zone trades,-0.13757646523014933,,,0.0
+fade,K2_close_2R,"random side, uniform random time (cost floor)",-0.11106251146513181,-0.17808997857850833,-0.04138857788812143,
