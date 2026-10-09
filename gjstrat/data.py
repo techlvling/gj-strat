@@ -73,14 +73,14 @@ def _url(sym: str, d: date, side: str) -> str:
 def _fetch(session: requests.Session, url: str, path: str) -> str:
     if os.path.exists(path):
         return "cached"
-    for attempt in range(15):
+    for attempt in range(30):
         try:
             r = session.get(url, timeout=60, headers={"User-Agent": "Mozilla/5.0"})
             if r.status_code == 404:
                 open(path, "wb").close()          # no file for that day (holiday / future)
                 return "404"
             if r.status_code in (429, 500, 502, 503, 504):   # Dukascopy throttles hard
-                time.sleep(min(2 ** attempt, 20) + random.random())
+                time.sleep(min(2 ** attempt, 60) + random.random())
                 continue
             r.raise_for_status()
             tmp = path + ".part"
@@ -89,7 +89,7 @@ def _fetch(session: requests.Session, url: str, path: str) -> str:
             os.replace(tmp, path)
             return "ok"
         except requests.RequestException:
-            time.sleep(min(2 ** attempt, 20) + random.random())
+            time.sleep(min(2 ** attempt, 60) + random.random())
     raise RuntimeError(f"failed to download {url}")
 
 
