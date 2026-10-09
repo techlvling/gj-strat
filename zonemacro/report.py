@@ -99,8 +99,10 @@ def build(out: str) -> str:
         nb = p["neighbor_IS_avg_exp"]
         me = p["top_IS_avg_exp"].iloc[0]
         noise = me > 0 and (nb.median() <= 0 or nb.median() < 0.5 * me)
+        label = ("no in-sample edge to check (IS <= 0)" if me <= 0
+                 else "LIKELY NOISE" if noise else "plateau OK")
         A(f"**{name}** (IS {me:.3f}R): neighbour median {nb.median():.3f}R, "
-          f"{(nb > 0).sum()}/{len(nb)} positive -> {'LIKELY NOISE' if noise else 'plateau OK'}\n")
+          f"{(nb > 0).sum()}/{len(nb)} positive -> {label}\n")
         A(md(p[["neighbor", "changed", "neighbor_IS_avg_exp", "neighbor_IS_n_USDJPY",
                 "neighbor_IS_n_EURUSD"]], 3))
         A("")
