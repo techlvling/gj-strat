@@ -538,3 +538,9 @@ def test_intraday_builders_oco_and_no_lookahead():
         c = m.bc[(k + 1) * 15 - 1]                                 # close of the signal bar
         assert m.ts(s.exit_by_i).hour == 7 and s.start_i % 15 == 0
         assert s.tp_dist > 0 and c == m.bc[s.start_i - 1]
+
+
+def test_index_price_scale_and_pip():
+    from gjstrat.data import pip_size, price_scale
+    assert price_scale("JPNIDXJPY") == 1000.0 and pip_size("JPNIDXJPY") == 1.0
+    assert price_scale("USATECHIDXUSD") == 1000.0 and pip_size("USATECHIDXUSD") == 1.0

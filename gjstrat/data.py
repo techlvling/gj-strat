@@ -33,8 +33,8 @@ MINORS = ["EURGBP", "EURJPY", "GBPJPY", "EURCHF", "EURAUD", "EURCAD", "EURNZD", 
 
 
 def price_scale(sym: str) -> float:
-    """Dukascopy stores prices as integers: 3 decimals for JPY pairs and gold, 5 for the rest."""
-    return 1000.0 if sym.endswith("JPY") or sym.startswith("XAU") else 100000.0
+    """Dukascopy stores prices as integers: 3 decimals for JPY pairs, gold and indices, 5 for the rest."""
+    return 1000.0 if sym.endswith("JPY") or sym.startswith("XAU") or "IDX" in sym else 100000.0
 
 
 @dataclass
@@ -183,6 +183,8 @@ def load_market(path: str) -> Market:
 
 def pip_size(sym: str) -> float:
     """0.01 for JPY pairs and gold (Dukascopy's gold pip = 1 cent), 0.0001 otherwise."""
+    if "IDX" in sym:
+        return 1.0                     # index CFDs (JPNIDXJPY, USATECHIDXUSD): 1 index point
     return 0.01 if sym.endswith("JPY") or sym.startswith("XAU") else 0.0001
 
 
