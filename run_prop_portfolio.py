@@ -3,7 +3,7 @@ the box breakout (Version B, RR 9, BE 3R, SL 1 box) and the gotobi Tokyo-fix sho
 (sell at 09:55 JST on gotobi days, exit 15:00 JST, SL 0.25 x ATR20), alone and combined.
 
 Risk mixes fixed before running. A challenge starts on every trading day 2010-2025 (each has >= 12
-months of data); share passed within 2 / 3 / 12 months. Full-period max drawdown and yearly
+months of data); share passed within 2 / 3 / 6 / 12 months. Full-period max drawdown and yearly
 return come from one continuous account. All costs: $7/lot, swap +1% markup, 0.2 pip slippage.
 
     python run_prop_portfolio.py
@@ -107,6 +107,9 @@ def main():
         rows.append({"mix": name, "trades": int((risk > 0).sum()),
                      "pass ≤2 months %": (passed & (res.days <= 61)).mean() * 100,
                      "pass ≤3 months %": (passed & (res.days <= 92)).mean() * 100,
+                     "pass ≤6 months %": (passed & (res.days <= 183)).mean() * 100,
+                     "fail ≤6 months %": (res.result.str.startswith("fail") & (res.days <= 183)).mean() * 100,
+                     "median months to pass": res.days[passed].median() / 30.4,
                      "pass ≤12 months %": (passed & (res.days <= 365)).mean() * 100,
                      "fail ≤12 months %": (res.result.str.startswith("fail") & (res.days <= 365)).mean() * 100,
                      "fails by daily 4% %": (res.result == "fail: daily 4%").mean() * 100,
