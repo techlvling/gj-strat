@@ -25,7 +25,8 @@ def account(trades: list[Trade], m: Market, start_balance: float = 10_000.0,
             risk_pct: float = 1.0, commission: float = 0.0, lot_step: float = 0.01,
             swap=None, sym: str | None = None, slippage_pips: float = 0.0) -> pd.DataFrame:
     """swap: gjstrat.swap.SwapModel (needs sym, e.g. "USDJPY"); None = no financing.
-    slippage_pips: worse fill on every stop order (entry, SL, BE stop); TP is a limit, none."""
+    slippage_pips: worse fill on the entry and on every exit except a TP limit (SL, BE stop,
+    market exits such as EOD / EMA)."""
     cols = ["day", "side", "trade_num", "entry_time_ist", "entry_price", "exit_time_ist",
             "exit_price", "range_pips", "risk_pips", "spread_pips", "R", "exit_reason", "lots",
             "pnl_usd", "swap_usd", "swap_nights", "balance_after", "gap_fill", "be_moved",
@@ -53,7 +54,7 @@ def account(trades: list[Trade], m: Market, start_balance: float = 10_000.0,
             pips = (t.exit - t.entry if t.side == "BUY" else t.entry - t.exit) / m.pip
             gross = lots[k] * pips * LOT * m.pip / m.quote_per_usd[t.exit_i]
             comm = commission * lots[k]
-            stop_fills = 1 + (t.reason in ("SL", "BE"))
+            stop_fills = 1 + (t.reason not in ("TP", "OPEN_AT_END"))
             comm += slippage_pips * stop_fills * lots[k] * LOT * m.pip / m.quote_per_usd[t.exit_i]
             if swap is not None:
                 swap_usd[k], nights[k] = swap.swap_usd(sym, t.side, lots[k], m.ts(t.entry_i),
