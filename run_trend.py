@@ -105,7 +105,7 @@ def main():
         breadth[name] = {s: {f"{p} sharpe": sharpe_t(x.net[(x.index >= a) & (x.index <= b)])[0]
                              for p, (a, b) in PERIODS.items() if p != "holdout"}
                          for s, x in pp.items()}
-        port.to_csv(f"{OUT}/daily_{name.split()[0]}_{name.split()[-1].replace('/', '-')}.csv")
+        port.to_csv(f"{OUT}/daily_{'_'.join(name.replace('/', '-').split()[:3])}.csv")
         print(name, {k: round(v, 3) for k, v in row.items() if k != "setup" and "holdout" not in k},
               flush=True)
 
