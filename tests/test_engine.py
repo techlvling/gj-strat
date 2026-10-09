@@ -500,6 +500,19 @@ def test_month_end_days_and_flow_signals_have_no_lookahead():
         assert (s.side == "BUY") == (m.bo[s.start_i] > m.bo[s.start_i - 30])
 
 
+def test_home_hours_windows_follow_local_time():
+    from gjstrat.patterns import home_hours
+    m = synthetic_market(days=400)
+    d = daily_table(m)
+    tky = home_hours(m, d, (9, 0), (15, 0), "Asia/Tokyo", "BUY", 0.5)
+    assert all(s.day.dayofweek < 5 and s.side == "BUY" for s in tky)
+    assert all(m.ts(s.start_i).hour == 0 and s.exit_by_i - s.start_i == 360 for s in tky)  # JST = UTC+9
+    us = {s.day: s for s in home_hours(m, d, (12, 0), (16, 30), "America/New_York", "SELL", 1.0)}
+    assert m.ts(us[pd.Timestamp("2025-01-15")].start_i).hour == 17                 # EST
+    assert m.ts(us[pd.Timestamp("2024-07-15")].start_i).hour == 16                 # EDT
+    assert us[pd.Timestamp("2024-07-15")].sl_dist == pytest.approx(d.loc["2024-07-15", "atr20"])
+
+
 def test_gold_price_scale_and_pip():
     from gjstrat.data import pip_size, price_scale
     assert price_scale("XAUUSD") == 1000.0 and pip_size("XAUUSD") == 0.01
