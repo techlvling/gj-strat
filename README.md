@@ -102,3 +102,8 @@ tested out-of-sample, benchmarked against no filter, 1000 random filters and a 2
 `python run_zone_alone.py` — the same zones with no day filter, ranked the same way, benchmarked
 against random entries placed inside each zone's own life (same side, stop and target; only the
 timing differs) -> `results/zone_alone/REPORT.md`.
+
+`python run_fade.py` — fade the same 4H impulses (sell after an up impulse, buy after a down
+impulse; entry at the impulse close or after a confirmation candle; stop beyond the impulse
+extreme; targets 1R / 2R / back to the base), benchmarked against a random side at the same
+moment -> `results/fade/REPORT.md`. Rules in `zonemacro/fade.py`, tests in `tests/test_fade.py`.

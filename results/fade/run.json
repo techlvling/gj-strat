@@ -1,0 +1,23 @@
+{
+ "start": "2010-01-01 00:00:00",
+ "end": "2026-10-07 23:45:00",
+ "split": "2020-01-23 09:27:00",
+ "combos_tested": 18,
+ "top5": [
+  "K3_close_2R",
+  "K3_close_1R",
+  "K1.5_close_2R",
+  "K2_close_1R",
+  "K2_close_2R"
+ ],
+ "focus": [
+  "K2_close_2R",
+  "K3_close_2R",
+  "K3_close_1R",
+  "K1.5_close_2R",
+  "K2_close_1R"
+ ],
+ "seeds": 1000,
+ "markup_pct": 0.5,
+ "runtime_s": 103
+}
