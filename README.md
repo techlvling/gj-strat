@@ -73,3 +73,22 @@ orders placed 00:30 UTC, expire 05:30 UTC. Only Mon–Fri IST dates are trading 
 * Days with any tick-less minute in the 05:00–05:59 IST range window are skipped and listed.
 * In-sample / out-of-sample split: first 60% / last 40% of tradable days. Combos are ranked by
   in-sample t-stat of mean R only.
+
+## Dragonfly Intercept (GBPJPY + EURUSD, 15m legs, 1H trend)
+
+```
+python -m pytest -q tests/test_dragonfly.py   # 37 rule tests (hand-built candles)
+python run_dragonfly.py                       # Phase 1: 2020-01-01 -> latest stored day
+```
+
+| File | What |
+|---|---|
+| `dragonfly/data.py` | 2020+ Dukascopy 1m bid/ask from `datastore/` -> 15m bars (parquet cache in `data/cache/`), 1H bars, gap counts |
+| `dragonfly/indicators.py` | EMA, Wilder ATR, 1H trend filter, closed-bar 1H -> 15m mapping, leg detection |
+| `dragonfly/engine.py` | Event loop: limit intercept (or chase), cancels, SL/TP/BE, skips, sizing |
+| `dragonfly/benchmarks.py` | Vectorised random-entry benchmark (same exit rules) |
+| `run_dragonfly.py` | 6-combo sweep, IS ranking, plateau check, top-3 OOS, chase + 1000-seed random, report |
+
+Results: `results/dragonfly/VERDICT.md`, `REPORT.md`, trade logs, charts and breakdowns.
+Phase 1 verdict: not useful (negative on both pairs IS and OOS, no significant edge over chase or random).
+Phase 2 (2010-2019) has not been run.
