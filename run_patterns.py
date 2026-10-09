@@ -1,4 +1,4 @@
-"""Pattern search on USDJPY 2010-2026 beyond the box breakout.
+"""Pattern search on one pair (default USDJPY) 2010-2026 beyond the box breakout.
 
 Pre-declared grid (36 setups):
   P1 Tokyo fix, long into the 09:55 JST fix: entry 23:00 / 23:30 / 00:00 UTC x days all /
@@ -12,10 +12,11 @@ Periods: design 2010-2017, check 2018-2023, holdout 2024-2026.
 Rule (fixed now): a setup survives if design avg R > 0 with t >= 2 AND check avg R > 0.
 Holdout numbers are shown only for survivors.
 
-    python run_patterns.py
+    python run_patterns.py [--sym EURJPY]
 """
 from __future__ import annotations
 
+import argparse
 import os
 from datetime import date
 from multiprocessing import Pool
@@ -80,10 +81,14 @@ def evaluate(item):
 
 
 def main():
-    global M, D, SWAP
+    global M, D, SWAP, SYM, OUT
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--sym", default="USDJPY")
+    SYM = ap.parse_args().sym
+    OUT = f"results/patterns_{SYM.lower()}"
     os.makedirs(OUT, exist_ok=True)
     M = build_market(SYM, date(2010, 1, 1), date(2026, 10, 7), "data/raw",
-                     "data/usdjpy_2010-01-01_2026-10-07.npz")
+                     f"data/{SYM.lower()}_2010-01-01_2026-10-07.npz")
     D = daily_table(M)
     D = D[D.index >= pd.Timestamp("2010-01-01")]
     SWAP = SwapModel.from_fred("rates", 1.0)
@@ -103,7 +108,7 @@ def main():
             "check avg R", "check t", "survives"]
     show = res[cols].sort_values("design t", ascending=False)
     surv = res[res.survives]
-    rep = ["# Pattern search — USDJPY 2010–2026 (beyond the box breakout)\n",
+    rep = [f"# Pattern search — {SYM} 2010–2026 (beyond the box breakout)\n",
            "36 pre-declared setups in 4 families (see run_patterns.py). Costs: $7/lot, swap (+1% markup), "
            "0.2 pip slippage per stop fill. Survival rule fixed before running: design (2010–2017) avg R > 0 "
            "with t ≥ 2 AND check (2018–2023) avg R > 0. Holdout (2024–2026) is shown only for survivors.\n",
