@@ -10,11 +10,12 @@ slippage + fees), per contract.
 Periods (fixed before looking): design 2011-2018, check 2019-2023, holdout 2024-2026.
 
 Prop simulation (rule 8 sizing, one trade a day): a challenge is started on every signal day and
-played forward. Two example accounts (edit ACCOUNTS for your firm):
-  * Futures 50K: $2,000 end-of-day trailing max loss, $1,000 daily limit, +$3,000 target,
+played forward. Accounts (edit ACCOUNTS):
+  * Firm rules (as in run_prop_sim.py): Phase 1 +8%, Phase 2 +6% on a fresh balance, static 10%
+    max loss, daily 4% of the day's starting balance, >= 3 trading days per phase, no time limit.
+    Assumed 100K, Nas100 CFD at $1 / point per lot, 0.01-lot steps, no commission.
+  * Futures 50K example: $2,000 end-of-day trailing max loss, $1,000 daily limit, +$3,000 target,
     MNQ = $2 / point, whole contracts, $1.50 round turn
-  * CFD 100K: $10,000 static max loss, $5,000 daily limit, +$8,000 target, $1 / point per lot,
-    0.01-lot steps, no commission
 
     python run_nas_orb.py [--slip 1]
 """
@@ -31,7 +32,7 @@ import numpy as np
 import pandas as pd
 
 from gjstrat.data import load_market, load_side, save_market, to_grid
-from gjstrat.nas_orb import Account, OrbParams, challenge, net_r, planned_loss, run, trading_days
+from gjstrat.nas_orb import Account, OrbParams, challenge, net_r, planned_loss, run, size, trading_days
 from run_backtest import fmt_table
 
 SYM = "USATECHIDXUSD"
@@ -40,9 +41,11 @@ RAW, OUT = "data/raw", "results/nas_orb"
 CACHE = f"data/nas100_{START}_{END}.npz"
 PERIODS = [("design 2011-18", "2011", "2018"), ("check 2019-23", "2019", "2023"),
            ("holdout 2024-26", "2024", "2026")]
+FIRM = Account("Firm 100K (8% + 6%, 10% / 4%)", 100_000, 10_000, False, 0, 8_000, 1.0, 0.01, 0.0,
+               target2=6_000, daily_frac=0.04, min_days=3)
 ACCOUNTS = [
+    FIRM,
     Account("Futures 50K (MNQ)", 50_000, 2_000, True, 1_000, 3_000, 2.0, 1, 1.50),
-    Account("CFD 100K", 100_000, 10_000, False, 5_000, 8_000, 1.0, 0.01, 0.0),
 ]
 
 
@@ -95,26 +98,71 @@ def period_table(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def prop_table(trades, df) -> pd.DataFrame:
-    rows = {}
+def prop_rows(trades, df, acc: Account, fixed_risk: float | None = None) -> dict:
     days = df.day.to_numpy()
     last = days[-1]
-    for acc in ACCOUNTS:
-        r = pd.DataFrame([challenge(trades, acc, k) for k in range(len(trades))])
-        r["start"] = days
-        r["days"] = [(days[x.end_k] - days[k]) / np.timedelta64(1, "D") for k, x in r.iterrows()]
-        row = {"challenges": len(r)}
-        for n in (30, 90, 365):
-            ok = r[r.start + np.timedelta64(n, "D") <= last]      # enough data to judge n days
-            row[f"pass <= {n}d %"] = 100 * ((ok.result == "pass") & (ok.days <= n)).mean()
-            row[f"fail <= {n}d %"] = 100 * ((ok.result == "fail") & (ok.days <= n)).mean()
-        passed = r[r.result == "pass"]
-        row["median days to pass (when passed)"] = passed.days.median()
-        row["signals skipped: 1 contract > budget %"] = \
-            100 * r.skipped.sum() / max((r.skipped + r.taken).sum(), 1)
-        rows[acc.name] = row
+    r = pd.DataFrame([challenge(trades, acc, k, fixed_risk) for k in range(len(trades))])
+    r["start"] = days
+    r["days"] = [(days[x.end_k] - days[k]) / np.timedelta64(1, "D") for k, x in r.iterrows()]
+    fail = r.result.str.startswith("fail")
+    row = {"challenges": len(r)}
+    for n in (90, 365):
+        ok = (r.start + np.timedelta64(n, "D") <= last).to_numpy()   # enough data to judge n days
+        row[f"pass <= {n}d %"] = 100 * ((r.result == "pass") & (r.days <= n))[ok].mean()
+        row[f"fail <= {n}d %"] = 100 * (fail & (r.days <= n))[ok].mean()
+    done = r[r.result != "unfinished"]
+    row["pass % (finished)"] = 100 * (done.result == "pass").mean() if len(done) else np.nan
+    row["fail in P1 % (finished)"] = 100 * (done.result.str.startswith("fail") & (done.phase == 1)).mean() \
+        if len(done) else np.nan
+    row["fails by daily limit"] = int((r.result == "fail: daily").sum())
+    row["unfinished"] = int((r.result == "unfinished").sum())
+    row["median days to pass"] = r[r.result == "pass"].days.median()
+    row["signals skipped: 1 contract > budget %"] = \
+        100 * r.skipped.sum() / max((r.skipped + r.taken).sum(), 1)
+    return row
+
+
+def prop_table(trades, df) -> pd.DataFrame:
+    out = pd.DataFrame({acc.name: prop_rows(trades, df, acc) for acc in ACCOUNTS}).T
+    out.index.name = "Account · rule 8 sizing"
+    return out
+
+
+def firm_fixed_table(trades, df) -> pd.DataFrame:
+    """Context only: the firm's rules with a fixed % of the balance risked instead of rule 8."""
+    out = pd.DataFrame({f"{x:.2%} of balance": prop_rows(trades, df, FIRM, x)
+                        for x in (0.0025, 0.005, 0.01)}).T
+    out.index.name = "Firm rules · fixed risk"
+    return out
+
+
+def firm_drift(trades) -> pd.DataFrame:
+    """Rule 8 on the firm account never ends a challenge, so show where the balance goes:
+    P/L after N calendar days from every signal day (phase 1, no stop at target or floor)."""
+    days = pd.DatetimeIndex([t.day for t in trades])
+    rows = {}
+    for n in (90, 365):
+        pl, peak = [], []
+        for k0 in range(len(trades)):
+            if days[k0] + pd.Timedelta(days=n) > days[-1]:
+                break
+            bal = hi = FIRM.start
+            for k in range(k0, len(trades)):
+                if (days[k] - days[k0]).days > n:
+                    break
+                t = trades[k]
+                bal += size(t, FIRM, bal - (FIRM.start - FIRM.max_loss), FIRM.daily_frac * bal) * \
+                    (t.pnl_pts * FIRM.point_value - FIRM.commission)
+                hi = max(hi, bal)
+            pl.append(bal - FIRM.start)
+            peak.append(hi - FIRM.start)
+        pl, peak = np.array(pl), np.array(peak)
+        rows[f"after {n} days"] = {"starts": len(pl), "median P/L $": np.median(pl),
+                                   "10th pct $": np.percentile(pl, 10), "90th pct $": np.percentile(pl, 90),
+                                   "best peak of any start $": peak.max(),
+                                   "starts that ever reach +8% %": 100 * (peak >= FIRM.target).mean()}
     out = pd.DataFrame(rows).T
-    out.index.name = "Account"
+    out.index.name = "Firm 100K · rule 8"
     return out
 
 
@@ -143,7 +191,7 @@ def main():
     days = trading_days(START, END)
     p = OrbParams(slip=args.slip)
     trades, c = run(m, p, days)
-    acc = ACCOUNTS[1]                               # R stats: CFD costs (no commission)
+    acc = FIRM                                      # R stats: CFD costs (no commission)
     df = trade_table(trades, acc)
     df.drop(columns=["year"]).to_csv(f"{OUT}/trades.csv", index=False)
 
@@ -175,6 +223,8 @@ def main():
     sens.index.name = "Variant"
 
     prop = prop_table(trades, df)
+    fixed = firm_fixed_table(trades, df)
+    drift = firm_drift(trades)
     sizing = sizing_table(df)
 
     rep = [f"# Nas100 15-minute opening-range breakout — {df.day.min():%b %Y} to {df.day.max():%b %Y}\n",
@@ -197,11 +247,13 @@ def main():
            "Most trades are small time-exit results that spread and slippage eat.\n",
            "* **Costs decide the sign.** With zero slippage the whole sample is about flat; each point of "
            "slippage per fill takes roughly 0.06 R per trade.\n",
-           "* **Rule 8 sizing makes a challenge impossible to pass on any useful time scale.** With a "
-           "$2,000 cushion the $50 budget is below one MNQ at the stop on every signal since 2020; on a "
-           "CFD account a 2R win adds 5% of the cushion, so an 8% target needs a long run of net wins "
-           "that this strategy does not produce. It also almost never fails, because the risk shrinks "
-           "with the cushion.\n",
+           "* **On the firm's rules (8% + 6%, 10% max loss, 4% daily, 3 days) rule 8 sizing never "
+           "passes and never fails.** Risk is 2.5% of the cushion ($250 on a fresh 100K), so a 2R win is "
+           f"+$500 against an $8,000 target; the balance drifts down (median P/L {drift.iloc[-1]["median P/L $"]:+,.0f} USD "
+           f"after a year) and no start date ever reaches +8% (best peak {drift.iloc[-1]["best peak of any start $"]:+,.0f} USD). "
+           "With a fixed 1% of balance instead, most challenges fail inside a year "
+           f"({fixed.iloc[-1]['fail <= 365d %']:.0f}% fail vs {fixed.iloc[-1]['pass <= 365d %']:.0f}% pass). "
+           "On a $2,000-cushion futures account the $50 budget is below one MNQ on every signal since 2020.\n",
            "* Data caveat: before mid-2013 Dukascopy has no separate ask (spread 0) and 2013 misses 86 "
            "days, so the early years flatter the cost side — and still lose.\n",
            "## Result by period\n", fmt_table(main_t, ".3f"),
@@ -215,12 +267,19 @@ def main():
            "\n## Prop challenge simulation (rule 8 sizing)\n",
            "A challenge is started on every signal day and played forward on the trades above "
            "(closed P/L only, no time limit). Only start days with at least N days of data after them "
-           "count towards the N-day columns.\n", fmt_table(prop, ".1f")]
+           "count towards the N-day columns. Firm rules: Phase 1 +8%, Phase 2 +6%, static 10% max "
+           "loss, daily 4% of the day's starting balance, >= 3 trading days per phase; assumed 100K, "
+           "$1 / point per lot, 0.01-lot steps, no commission.\n", fmt_table(prop, ".1f"),
+           "\nRule 8 never ends a firm challenge, so this is where the balance goes instead:\n",
+           fmt_table(drift, ".0f"),
+           "\n### Firm rules with a fixed % risk instead of rule 8 (context only)\n",
+           "Same challenges, but each trade risks a fixed share of the balance.\n",
+           fmt_table(fixed, ".1f")]
     open(f"{OUT}/REPORT.md", "w").write("\n".join(rep) + "\n")
     pd.set_option("display.width", 250)
     pd.set_option("display.max_columns", 30)
     print(f"{c}".split(", skipped=")[0])
-    for t in (main_t, by_year, by_side, exits, sens, sizing, prop):
+    for t in (main_t, by_year, by_side, exits, sens, sizing, prop, drift, fixed):
         print(t.round(3).to_string(), "\n")
 
 

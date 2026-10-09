@@ -164,3 +164,20 @@ def test_challenge_trailing_floor_and_pass():
     assert challenge([T(2.0), T(2.0), T(2.0)], acc, 0)["result"] == "pass"
     r = challenge([T(-10.0)] * 30, acc, 0)
     assert r["result"] == "unfinished" and r["skipped"] > 0  # shrinking cushion -> no contract fits
+
+
+def test_two_phase_challenge_min_days_and_daily_limit():
+    class T:
+        def __init__(self, pnl):
+            self.pnl_pts, self.risk_pts = pnl, 9.0
+    acc = Account("t", 1_000, 100, False, 0, 30, 1.0, 1, 0.0, risk_frac=0.5, est_slip=1.0,
+                  target2=20, daily_frac=0.04, min_days=3)
+    # budget min(50% cushion, 4% daily) -> 4 contracts; phase 1: +40 on day 1 is not enough
+    # (3 days needed), passes on day 3; phase 2 restarts at 1,000 and needs 3 days of +12
+    r = challenge([T(10.0)] + [T(3.0)] * 5, acc, 0)
+    assert (r["result"], r["phase"], r["taken"]) == ("pass", 2, 6)
+    assert challenge([T(10.0)] + [T(3.0)] * 4, acc, 0)["phase"] == 2
+    assert challenge([T(10.0)], acc, 0)["result"] == "unfinished"     # target hit but 1 day < 3
+    assert challenge([T(-10.0)], acc, 0)["result"] == "fail: daily"  # -40 = 4% of 1,000
+    r = challenge([T(1.0)], acc, 0, fixed_risk=0.01)                   # $10 budget -> 1 contract
+    assert r["taken"] == 1

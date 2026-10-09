@@ -12,7 +12,7 @@ Days: 3796 NYSE trading days, 201 skipped for missing data, 181 without a signal
 
 * **Costs decide the sign.** With zero slippage the whole sample is about flat; each point of slippage per fill takes roughly 0.06 R per trade.
 
-* **Rule 8 sizing makes a challenge impossible to pass on any useful time scale.** With a $2,000 cushion the $50 budget is below one MNQ at the stop on every signal since 2020; on a CFD account a 2R win adds 5% of the cushion, so an 8% target needs a long run of net wins that this strategy does not produce. It also almost never fails, because the risk shrinks with the cushion.
+* **On the firm's rules (8% + 6%, 10% max loss, 4% daily, 3 days) rule 8 sizing never passes and never fails.** Risk is 2.5% of the cushion ($250 on a fresh 100K), so a 2R win is +$500 against an $8,000 target; the balance drifts down (median P/L -2,990 USD after a year) and no start date ever reaches +8% (best peak +6,248 USD). With a fixed 1% of balance instead, most challenges fail inside a year (70% fail vs 6% pass). On a $2,000-cushion futures account the $50 budget is below one MNQ on every signal since 2020.
 
 * Data caveat: before mid-2013 Dukascopy has no separate ask (spread 0) and 2013 misses 86 days, so the early years flatter the cost side — and still lose.
 
@@ -99,9 +99,26 @@ With a $2,000 cushion the budget is $50. One MNQ ($2/pt, $1.50 fees) at the stop
 
 ## Prop challenge simulation (rule 8 sizing)
 
-A challenge is started on every signal day and played forward on the trades above (closed P/L only, no time limit). Only start days with at least N days of data after them count towards the N-day columns.
+A challenge is started on every signal day and played forward on the trades above (closed P/L only, no time limit). Only start days with at least N days of data after them count towards the N-day columns. Firm rules: Phase 1 +8%, Phase 2 +6%, static 10% max loss, daily 4% of the day's starting balance, >= 3 trading days per phase; assumed 100K, $1 / point per lot, 0.01-lot steps, no commission.
 
-| Account | challenges | pass <= 30d % | fail <= 30d % | pass <= 90d % | fail <= 90d % | pass <= 365d % | fail <= 365d % | median days to pass (when passed) | signals skipped: 1 contract > budget % |
-|---|---|---|---|---|---|---|---|---|---|
-| Futures 50K (MNQ) | 3356.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |  | 97.3 |
-| CFD 100K | 3356.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 1689.0 | 8.4 |
+| Account · rule 8 sizing | challenges | pass <= 90d % | fail <= 90d % | pass <= 365d % | fail <= 365d % | pass % (finished) | fail in P1 % (finished) | fails by daily limit | unfinished | median days to pass | signals skipped: 1 contract > budget % |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Firm 100K (8% + 6%, 10% / 4%) | 3356.0 | 0.0 | 0.0 | 0.0 | 0.0 |  |  | 0.0 | 3356.0 |  | 8.4 |
+| Futures 50K (MNQ) | 3356.0 | 0.0 | 0.0 | 0.0 | 0.0 |  |  | 0.0 | 3356.0 |  | 97.3 |
+
+Rule 8 never ends a firm challenge, so this is where the balance goes instead:
+
+| Firm 100K · rule 8 | starts | median P/L $ | 10th pct $ | 90th pct $ | best peak of any start $ | starts that ever reach +8% % |
+|---|---|---|---|---|---|---|
+| after 90 days | 3297 | -1078 | -2767 | 910 | 4650 | 0 |
+| after 365 days | 3117 | -2990 | -6496 | 1600 | 6248 | 0 |
+
+### Firm rules with a fixed % risk instead of rule 8 (context only)
+
+Same challenges, but each trade risks a fixed share of the balance.
+
+| Firm rules · fixed risk | challenges | pass <= 90d % | fail <= 90d % | pass <= 365d % | fail <= 365d % | pass % (finished) | fail in P1 % (finished) | fails by daily limit | unfinished | median days to pass | signals skipped: 1 contract > budget % |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.25% of balance | 3356.0 | 0.0 | 0.0 | 0.0 | 9.3 | 0.0 | 100.0 | 0.0 | 1926.0 |  | 0.0 |
+| 0.50% of balance | 3356.0 | 0.0 | 2.3 | 0.0 | 39.7 | 7.7 | 91.9 | 0.0 | 1368.0 | 1695.0 | 0.0 |
+| 1.00% of balance | 3356.0 | 0.5 | 20.6 | 6.4 | 70.1 | 19.8 | 69.4 | 0.0 | 71.0 | 462.0 | 0.0 |

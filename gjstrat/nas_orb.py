@@ -21,7 +21,7 @@ had no ticks skipped.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 
 import numpy as np
@@ -194,6 +194,10 @@ class Account:
     commission: float              # USD per contract round turn
     risk_frac: float = 0.025       # of the remaining cushion (capped by the daily allowance)
     est_slip: float = 1.0          # points of stop slippage assumed when sizing
+    target2: float = 0.0           # phase 2 profit target on a fresh balance; 0 = one phase
+    daily_frac: float = 0.0        # daily limit as a fraction of the day's starting balance
+                                   # (used instead of daily_limit when > 0)
+    min_days: int = 0              # trading days needed in each phase
 
 
 def planned_loss(t: OrbTrade, acc: Account) -> float:
@@ -214,25 +218,37 @@ def size(t: OrbTrade, acc: Account, cushion: float, daily_left: float) -> float:
     return float(n) if n >= acc.step - 1e-12 else 0.0
 
 
-def challenge(trades: list[OrbTrade], acc: Account, k0: int) -> dict:
-    """Play the account forward from trade k0 with rule-8 sizing. Closed P/L only (one trade a day,
-    so the daily limit can only be breached by the trade itself)."""
-    bal, floor = acc.start, acc.start - acc.max_loss
-    taken = skipped = 0
+def challenge(trades: list[OrbTrade], acc: Account, k0: int, fixed_risk: float | None = None) -> dict:
+    """Play the account forward from trade k0. Sizing is rule 8, or `fixed_risk` x balance when
+    given (capped by the daily allowance in both cases). Closed P/L only: one trade a day, so the
+    daily limit can only be breached by that trade. With target2 a passed phase 1 restarts on a
+    fresh balance for phase 2."""
+    phase, taken, skipped = 1, 0, 0
+    bal, floor, days = acc.start, acc.start - acc.max_loss, 0
     for k in range(k0, len(trades)):
         t = trades[k]
-        cushion = bal - floor
-        n = size(t, acc, cushion, acc.daily_limit)
+        daily = acc.daily_frac * bal if acc.daily_frac > 0 else acc.daily_limit
+        if fixed_risk is None:
+            n = size(t, acc, bal - floor, daily)
+        else:
+            n = size(t, replace(acc, risk_frac=1.0), fixed_risk * bal, daily)
         if n == 0:
             skipped += 1
             continue
         pnl = n * (t.pnl_pts * acc.point_value - acc.commission)
         bal += pnl
         taken += 1
-        if pnl <= -acc.daily_limit or bal <= floor:
-            return dict(result="fail", taken=taken, skipped=skipped, end_k=k)
-        if bal >= acc.start + acc.target:
-            return dict(result="pass", taken=taken, skipped=skipped, end_k=k)
+        days += 1
+        if pnl <= -daily:
+            return dict(result="fail: daily", phase=phase, taken=taken, skipped=skipped, end_k=k)
+        if bal <= floor:
+            return dict(result="fail: max loss", phase=phase, taken=taken, skipped=skipped, end_k=k)
+        target = acc.target if phase == 1 else acc.target2
+        if bal >= acc.start + target and days >= acc.min_days:
+            if phase == 1 and acc.target2 > 0:
+                phase, bal, floor, days = 2, acc.start, acc.start - acc.max_loss, 0
+                continue
+            return dict(result="pass", phase=phase, taken=taken, skipped=skipped, end_k=k)
         if acc.trailing:
             floor = min(max(floor, bal - acc.max_loss), acc.start)
-    return dict(result="unfinished", taken=taken, skipped=skipped, end_k=len(trades) - 1)
+    return dict(result="unfinished", phase=phase, taken=taken, skipped=skipped, end_k=len(trades) - 1)
