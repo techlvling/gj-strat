@@ -24,8 +24,11 @@ from gjstrat.data import CANDLE_DTYPE, _decode, price_scale
 
 RAW, CACHE, STORE = "data/raw", "data/cache", "datastore"
 PAIRS = ("USDJPY", "EURUSD")
-PIP = {"USDJPY": 0.01, "EURUSD": 0.0001}
-DEFAULT_SPREAD_PIPS = {"USDJPY": 1.0, "EURUSD": 0.8}
+PIP = {"USDJPY": 0.01, "EURUSD": 0.0001, "EURJPY": 0.01, "GBPJPY": 0.01, "AUDJPY": 0.01,
+       "CADJPY": 0.01, "CHFJPY": 0.01, "NZDJPY": 0.01}
+# used only on days with no ASK file (the ask is then bid + this spread)
+DEFAULT_SPREAD_PIPS = {"USDJPY": 1.0, "EURUSD": 0.8, "EURJPY": 1.5, "GBPJPY": 2.5, "AUDJPY": 1.5,
+                       "CADJPY": 2.0, "CHFJPY": 2.5, "NZDJPY": 2.0}
 COLS = ["bo", "bh", "bl", "bc", "ao", "ah", "al", "ac"]
 
 

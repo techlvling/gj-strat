@@ -1,0 +1,59 @@
+{
+ "start": "2010-01-01 00:00:00",
+ "end": "2026-10-07 23:45:00",
+ "split": "2020-01-23 09:27:00",
+ "seeds": 1000,
+ "markup_pct": 0.5,
+ "fresh_pairs": [
+  "EURJPY",
+  "GBPJPY",
+  "AUDJPY",
+  "CADJPY",
+  "CHFJPY"
+ ],
+ "reference": [
+  "USDJPY"
+ ],
+ "primary": "K3_close_2R",
+ "gaps": {
+  "EURJPY": {
+   "expected_15m_bars": 414304,
+   "missing_15m_bars": 116,
+   "gaps_ge_1h": 12
+  },
+  "GBPJPY": {
+   "expected_15m_bars": 414304,
+   "missing_15m_bars": 129,
+   "gaps_ge_1h": 12
+  },
+  "AUDJPY": {
+   "expected_15m_bars": 414304,
+   "missing_15m_bars": 119,
+   "gaps_ge_1h": 13
+  },
+  "CADJPY": {
+   "expected_15m_bars": 414304,
+   "missing_15m_bars": 110,
+   "gaps_ge_1h": 12
+  },
+  "CHFJPY": {
+   "expected_15m_bars": 414304,
+   "missing_15m_bars": 237,
+   "gaps_ge_1h": 16
+  },
+  "USDJPY": {
+   "expected_15m_bars": 414304,
+   "missing_15m_bars": 109,
+   "gaps_ge_1h": 13
+  }
+ },
+ "spread_median_pips": {
+  "EURJPY": 0.9000000000000341,
+  "GBPJPY": 1.9000000000005457,
+  "AUDJPY": 0.9999999999990905,
+  "CADJPY": 1.2999999999991019,
+  "CHFJPY": 1.8000000000000682,
+  "USDJPY": 0.49999999999954525
+ },
+ "runtime_s": 58
+}

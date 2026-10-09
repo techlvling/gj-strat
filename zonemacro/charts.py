@@ -60,3 +60,40 @@ def plot_combo(path: str, title: str, curves: dict, bands: dict, grid: pd.Dateti
     fig.tight_layout(rect=(0, 0.06, 1, 1))
     fig.savefig(path, dpi=130, facecolor=SURFACE)
     plt.close(fig)
+
+
+def plot_grid(path: str, title: str, curves: dict, bands: dict, grid: pd.DatetimeIndex,
+              split: pd.Timestamp | None, line_label: str, band_label: str, ncol: int = 3) -> None:
+    """Small multiples, one panel per pair: one strategy line over a benchmark 5-95% band."""
+    pairs = list(curves)
+    nrow = int(np.ceil(len(pairs) / ncol))
+    fig, axes = plt.subplots(nrow, ncol, figsize=(5.2 * ncol, 3.4 * nrow), facecolor=SURFACE, squeeze=False)
+    col = SERIES["macro"][0]
+    for ax, pair in zip(axes.flat, pairs):
+        ax.set_facecolor(SURFACE)
+        lo, med, hi = bands[pair]
+        ax.fill_between(grid, lo, hi, color=BAND, alpha=0.55, lw=0, label=f"{band_label} 5-95%")
+        ax.plot(grid, med, color=INK2, lw=1, ls=(0, (3, 2)), label=f"{band_label} median")
+        y = curves[pair]
+        ax.plot(grid, y, color=col, lw=2, label=line_label)
+        ax.annotate(f"{y[-1]:+.0f}%", (grid[-1], y[-1]), xytext=(4, 0), textcoords="offset points",
+                    va="center", fontsize=8, color=INK)
+        if split is not None:
+            ax.axvline(split, color=INK2, lw=0.8, ls=":")
+        ax.axhline(0, color=INK2, lw=0.6)
+        ax.set_title(pair, fontsize=10, color=INK, loc="left")
+        ax.grid(axis="y", color=GRID, lw=0.6)
+        for s in ("top", "right"):
+            ax.spines[s].set_visible(False)
+        for s in ("left", "bottom"):
+            ax.spines[s].set_color(GRID)
+        ax.tick_params(colors=INK2, labelsize=7)
+    for ax in list(axes.flat)[len(pairs):]:
+        ax.set_visible(False)
+    handles, labels = axes.flat[0].get_legend_handles_labels()
+    fig.legend(handles, labels, fontsize=8, frameon=False, loc="lower center", ncol=len(labels))
+    fig.suptitle(title, fontsize=12, color=INK, x=0.01, y=0.99, ha="left")
+    fig.text(0.01, 0.925, "Net return, % (1% risk per trade, compounding)", fontsize=8, color=INK2)
+    fig.tight_layout(rect=(0, 0.05, 1, 0.91))
+    fig.savefig(path, dpi=130, facecolor=SURFACE)
+    plt.close(fig)

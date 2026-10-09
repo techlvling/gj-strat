@@ -107,3 +107,7 @@ timing differs) -> `results/zone_alone/REPORT.md`.
 impulse; entry at the impulse close or after a confirmation candle; stop beyond the impulse
 extreme; targets 1R / 2R / back to the base), benchmarked against a random side at the same
 moment -> `results/fade/REPORT.md`. Rules in `zonemacro/fade.py`, tests in `tests/test_fade.py`.
+
+`python run_jpy_crosses.py` — the USDJPY K3 fade with rules frozen, tested unchanged on EURJPY,
+GBPJPY, AUDJPY, CADJPY and CHFJPY against pass criteria fixed before running ->
+`results/fade_jpy_crosses/REPORT.md`.
