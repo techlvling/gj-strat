@@ -24,7 +24,7 @@ def equity_on_grid(exit_ns: np.ndarray, r: np.ndarray, grid_ns: np.ndarray) -> n
 
 
 def plot_combo(path: str, title: str, curves: dict, bands: dict, grid: pd.DatetimeIndex,
-               split: pd.Timestamp) -> None:
+               split: pd.Timestamp, series: dict | None = None, band_label: str = "Random filter") -> None:
     """curves[pair][filter] = array on grid; bands[pair] = (p5, p50, p95) arrays."""
     pairs = list(curves)
     fig, axes = plt.subplots(1, len(pairs), figsize=(6.2 * len(pairs), 4.2), sharey=False,
@@ -33,9 +33,9 @@ def plot_combo(path: str, title: str, curves: dict, bands: dict, grid: pd.Dateti
         ax.set_facecolor(SURFACE)
         if pair in bands:
             lo, med, hi = bands[pair]
-            ax.fill_between(grid, lo, hi, color=BAND, alpha=0.55, lw=0, label="Random filter 5-95%")
-            ax.plot(grid, med, color=INK2, lw=1, ls=(0, (3, 2)), label="Random filter median")
-        for f, (col, lab) in SERIES.items():
+            ax.fill_between(grid, lo, hi, color=BAND, alpha=0.55, lw=0, label=f"{band_label} 5-95%")
+            ax.plot(grid, med, color=INK2, lw=1, ls=(0, (3, 2)), label=f"{band_label} median")
+        for f, (col, lab) in (series or SERIES).items():
             y = curves[pair].get(f)
             if y is None:
                 continue

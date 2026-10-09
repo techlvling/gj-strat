@@ -180,7 +180,7 @@ def main():
                          "IS_exp_EURUSD": piv[("expectancy_R", "EURUSD")],
                          "IS_n_USDJPY": piv[("trades", "USDJPY")].astype(int),
                          "IS_n_EURUSD": piv[("trades", "EURUSD")].astype(int)})
-    rank["IS_avg_exp"] = rank[["IS_exp_USDJPY", "IS_exp_EURUSD"]].mean(1)
+    rank["IS_avg_exp"] = rank[["IS_exp_USDJPY", "IS_exp_EURUSD"]].mean(axis=1)
     rank["eligible_100_each"] = (rank["IS_n_USDJPY"] >= 100) & (rank["IS_n_EURUSD"] >= 100)
     rank = rank.sort_values(["eligible_100_each", "IS_avg_exp"], ascending=[False, False])
     top = [c for c in rank.index[rank["eligible_100_each"]][:5]]
@@ -190,7 +190,7 @@ def main():
                                                                 values=["expectancy_R", "trades"])
     rank["OOS_exp_USDJPY"] = oos[("expectancy_R", "USDJPY")]
     rank["OOS_exp_EURUSD"] = oos[("expectancy_R", "EURUSD")]
-    rank["OOS_avg_exp"] = rank[["OOS_exp_USDJPY", "OOS_exp_EURUSD"]].mean(1)
+    rank["OOS_avg_exp"] = rank[["OOS_exp_USDJPY", "OOS_exp_EURUSD"]].mean(axis=1)
     rank["OOS_n_USDJPY"] = oos[("trades", "USDJPY")].astype(int)
     rank["OOS_n_EURUSD"] = oos[("trades", "EURUSD")].astype(int)
     rank["top5"] = rank.index.isin(top)
