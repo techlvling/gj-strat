@@ -181,6 +181,11 @@ def load_market(path: str) -> Market:
                   has_ask=bool(z["has_ask"]), pip=float(z["pip"]) if "pip" in z else 0.01)
 
 
+def contract_size(sym: str) -> float:
+    """Units per 1.0 lot: 100 oz for gold, 100k base units for FX."""
+    return 100.0 if sym.startswith("XAU") else 100_000.0
+
+
 def pip_size(sym: str) -> float:
     """0.01 for JPY pairs and gold (Dukascopy's gold pip = 1 cent), 0.0001 otherwise."""
     if "IDX" in sym:

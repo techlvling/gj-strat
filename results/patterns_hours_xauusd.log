@@ -1,0 +1,10 @@
+XAUUSD done
+                design days  design mean pips  design t  check days  check mean pips  check t
+window · pair                                                                                
+H3 us · XAUUSD         2020              1.04      0.08        1548           -10.83    -0.79
+                                          design trades  design win %  design avg R  design t  check trades  check avg R  check t  survives
+Setup · pair                                                                                                                               
+H3 us home-strong SELL SL0.5ATR · XAUUSD           2020        43.366        -0.036    -3.098          1548       -0.035   -2.979     False
+H3 us home-weak BUY SL1ATR · XAUUSD                2020        43.663        -0.024    -3.648          1548       -0.028   -4.354     False
+H3 us home-weak BUY SL0.5ATR · XAUUSD              2020        43.267        -0.045    -3.740          1548       -0.053   -4.424     False
+H3 us home-strong SELL SL1ATR · XAUUSD             2020        43.465        -0.024    -3.802          1548       -0.018   -2.935     False

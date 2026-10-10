@@ -11,7 +11,7 @@ Costs, periods and survival rule as run_patterns.py (design 2010-2017 avg R > 0 
 AND check 2018-2023 avg R > 0). A setup counts as robust only if it survives on >= 2 markets.
 Holdout 2024-2026 shown only for survivors.
 
-    python run_patterns_intraday.py [--pairs USDJPY XAUUSD ...]
+    python run_patterns_intraday.py [--pairs USDJPY XAUUSD ...] [--out DIR]
 """
 from __future__ import annotations
 
@@ -57,9 +57,12 @@ def grid():
 
 
 def main():
+    global OUT
     ap = argparse.ArgumentParser()
     ap.add_argument("--pairs", nargs="*", default=PAIRS)
-    pairs = ap.parse_args().pairs
+    ap.add_argument("--out", default=OUT)
+    a = ap.parse_args()
+    pairs, OUT = a.pairs, a.out
     os.makedirs(OUT, exist_ok=True)
     rp.SWAP = SwapModel.from_fred("rates", 1.0)
     frames = []

@@ -1,0 +1,55 @@
+daily candles: 1064 files, 0 downloaded, 1064 cached, 0 not on server
+             first        last  days
+EURUSD  2008-01-01  2025-12-31  4695
+GBPUSD  2008-01-01  2025-12-31  4695
+USDJPY  2008-01-01  2025-12-31  4695
+USDCHF  2008-01-01  2025-12-31  4695
+AUDUSD  2008-01-02  2025-12-31  4693
+USDCAD  2008-01-01  2025-12-31  4695
+NZDUSD  2008-01-01  2025-12-31  4695
+EURGBP  2008-01-01  2025-12-31  4693
+EURJPY  2008-01-01  2025-12-31  4695
+GBPJPY  2008-01-01  2025-12-31  4695
+EURCHF  2008-01-01  2025-12-31  4693
+EURAUD  2008-01-01  2025-12-31  4693
+EURCAD  2008-01-01  2025-12-31  4693
+EURNZD  2008-01-01  2025-12-31  4693
+GBPCHF  2008-01-01  2025-12-31  4693
+GBPAUD  2008-01-01  2025-12-31  4693
+GBPCAD  2008-01-01  2025-12-31  4693
+GBPNZD  2008-01-01  2025-12-31  4693
+AUDJPY  2008-01-01  2025-12-31  4695
+AUDNZD  2008-01-01  2025-12-31  4689
+AUDCAD  2008-01-01  2025-12-31  4693
+AUDCHF  2008-01-01  2025-12-31  4693
+CADJPY  2008-01-01  2025-12-31  4693
+CHFJPY  2008-01-01  2025-12-31  4693
+NZDJPY  2008-01-01  2025-12-31  4693
+NZDCAD  2008-01-01  2025-12-31  4693
+NZDCHF  2008-01-01  2025-12-31  4693
+CADCHF  2008-01-01  2025-12-31  4693
+T1 tsmom 63d monthly {'design days': 2085, 'design ann ret %': np.float64(-4.282), 'design sharpe': np.float64(-0.169), 'design t': np.float64(-0.487), 'design ann vol %': np.float64(25.273), 'design max DD %': 69.982, 'design gross %/yr': np.float64(1.696), 'design cost %/yr': np.float64(0.768), 'design carry %/yr': np.float64(0.836), 'design markup %/yr': np.float64(6.046), 'design no-markup ann ret %': np.float64(1.763), 'design no-markup t': np.float64(0.201), 'check days': 1564, 'check ann ret %': np.float64(-18.193), 'check sharpe': np.float64(-0.752), 'check t': np.float64(-1.874), 'check ann vol %': np.float64(24.181), 'check max DD %': 123.11, 'check gross %/yr': np.float64(-10.159), 'check cost %/yr': np.float64(0.814), 'check carry %/yr': np.float64(-0.161), 'check markup %/yr': np.float64(7.059), 'check no-markup ann ret %': np.float64(-11.133), 'check no-markup t': np.float64(-1.147)}
+T1 tsmom 126d monthly {'design days': 2085, 'design ann ret %': np.float64(-3.94), 'design sharpe': np.float64(-0.161), 'design t': np.float64(-0.463), 'design ann vol %': np.float64(24.467), 'design max DD %': 95.664, 'design gross %/yr': np.float64(1.774), 'design cost %/yr': np.float64(0.607), 'design carry %/yr': np.float64(0.938), 'design markup %/yr': np.float64(6.046), 'design no-markup ann ret %': np.float64(2.105), 'design no-markup t': np.float64(0.248), 'check days': 1564, 'check ann ret %': np.float64(-18.189), 'check sharpe': np.float64(-0.794), 'check t': np.float64(-1.977), 'check ann vol %': np.float64(22.915), 'check max DD %': 121.817, 'check gross %/yr': np.float64(-10.085), 'check cost %/yr': np.float64(0.628), 'check carry %/yr': np.float64(-0.416), 'check markup %/yr': np.float64(7.059), 'check no-markup ann ret %': np.float64(-11.129), 'check no-markup t': np.float64(-1.21)}
+T1 tsmom 252d monthly {'design days': 2085, 'design ann ret %': np.float64(-6.064), 'design sharpe': np.float64(-0.26), 'design t': np.float64(-0.747), 'design ann vol %': np.float64(23.351), 'design max DD %': 76.896, 'design gross %/yr': np.float64(-0.796), 'design cost %/yr': np.float64(0.506), 'design carry %/yr': np.float64(1.283), 'design markup %/yr': np.float64(6.046), 'design no-markup ann ret %': np.float64(-0.019), 'design no-markup t': np.float64(-0.002), 'check days': 1564, 'check ann ret %': np.float64(-10.502), 'check sharpe': np.float64(-0.44), 'check t': np.float64(-1.097), 'check ann vol %': np.float64(23.858), 'check max DD %': 77.068, 'check gross %/yr': np.float64(-2.701), 'check cost %/yr': np.float64(0.484), 'check carry %/yr': np.float64(-0.257), 'check markup %/yr': np.float64(7.059), 'check no-markup ann ret %': np.float64(-3.442), 'check no-markup t': np.float64(-0.359)}
+T2 ma-cross 50/200 {'design days': 2085, 'design ann ret %': np.float64(-7.639), 'design sharpe': np.float64(-0.299), 'design t': np.float64(-0.86), 'design ann vol %': np.float64(25.549), 'design max DD %': 110.373, 'design gross %/yr': np.float64(-1.422), 'design cost %/yr': np.float64(0.348), 'design carry %/yr': np.float64(0.257), 'design markup %/yr': np.float64(6.126), 'design no-markup ann ret %': np.float64(-1.513), 'design no-markup t': np.float64(-0.17), 'check days': 1564, 'check ann ret %': np.float64(-17.79), 'check sharpe': np.float64(-0.744), 'check t': np.float64(-1.853), 'check ann vol %': np.float64(23.914), 'check max DD %': 113.883, 'check gross %/yr': np.float64(-10.296), 'check cost %/yr': np.float64(0.364), 'check carry %/yr': np.float64(-0.298), 'check markup %/yr': np.float64(6.832), 'check no-markup ann ret %': np.float64(-10.958), 'check no-markup t': np.float64(-1.141)}
+T2 ma-cross 20/100 {'design days': 2085, 'design ann ret %': np.float64(-6.277), 'design sharpe': np.float64(-0.25), 'design t': np.float64(-0.72), 'design ann vol %': np.float64(25.071), 'design max DD %': 69.398, 'design gross %/yr': np.float64(0.642), 'design cost %/yr': np.float64(0.699), 'design carry %/yr': np.float64(-0.233), 'design markup %/yr': np.float64(5.988), 'design no-markup ann ret %': np.float64(-0.289), 'design no-markup t': np.float64(-0.033), 'check days': 1564, 'check ann ret %': np.float64(-23.507), 'check sharpe': np.float64(-0.961), 'check t': np.float64(-2.395), 'check ann vol %': np.float64(24.457), 'check max DD %': 158.425, 'check gross %/yr': np.float64(-15.822), 'check cost %/yr': np.float64(0.788), 'check carry %/yr': np.float64(-0.001), 'check markup %/yr': np.float64(6.896), 'check no-markup ann ret %': np.float64(-16.612), 'check no-markup t': np.float64(-1.692)}
+T3 donchian 20/10 {'design days': 2085, 'design ann ret %': np.float64(-7.358), 'design sharpe': np.float64(-0.354), 'design t': np.float64(-1.019), 'design ann vol %': np.float64(20.763), 'design max DD %': 78.488, 'design gross %/yr': np.float64(-0.623), 'design cost %/yr': np.float64(2.338), 'design carry %/yr': np.float64(-0.031), 'design markup %/yr': np.float64(4.365), 'design no-markup ann ret %': np.float64(-2.993), 'design no-markup t': np.float64(-0.415), 'check days': 1564, 'check ann ret %': np.float64(-10.835), 'check sharpe': np.float64(-0.491), 'check t': np.float64(-1.224), 'check ann vol %': np.float64(22.061), 'check max DD %': 91.641, 'check gross %/yr': np.float64(-3.171), 'check cost %/yr': np.float64(2.353), 'check carry %/yr': np.float64(-0.175), 'check markup %/yr': np.float64(5.137), 'check no-markup ann ret %': np.float64(-5.698), 'check no-markup t': np.float64(-0.643)}
+T3 donchian 55/20 {'design days': 2085, 'design ann ret %': np.float64(-6.399), 'design sharpe': np.float64(-0.316), 'design t': np.float64(-0.908), 'design ann vol %': np.float64(20.274), 'design max DD %': 66.79, 'design gross %/yr': np.float64(-1.665), 'design cost %/yr': np.float64(1.004), 'design carry %/yr': np.float64(-0.075), 'design markup %/yr': np.float64(3.656), 'design no-markup ann ret %': np.float64(-2.744), 'design no-markup t': np.float64(-0.389), 'check days': 1564, 'check ann ret %': np.float64(-13.1), 'check sharpe': np.float64(-0.634), 'check t': np.float64(-1.579), 'check ann vol %': np.float64(20.663), 'check max DD %': 91.43, 'check gross %/yr': np.float64(-7.52), 'check cost %/yr': np.float64(1.042), 'check carry %/yr': np.float64(-0.321), 'check markup %/yr': np.float64(4.218), 'check no-markup ann ret %': np.float64(-8.882), 'check no-markup t': np.float64(-1.071)}
+                       design ann ret %  design sharpe  design t  design ann vol %  check ann ret %  check sharpe  check t  survives
+setup                                                                                                                               
+T1 tsmom 63d monthly              -4.28          -0.17     -0.49             25.27           -18.19         -0.75    -1.87     False
+T1 tsmom 126d monthly             -3.94          -0.16     -0.46             24.47           -18.19         -0.79    -1.98     False
+T1 tsmom 252d monthly             -6.06          -0.26     -0.75             23.35           -10.50         -0.44    -1.10     False
+T2 ma-cross 50/200                -7.64          -0.30     -0.86             25.55           -17.79         -0.74    -1.85     False
+T2 ma-cross 20/100                -6.28          -0.25     -0.72             25.07           -23.51         -0.96    -2.39     False
+T3 donchian 20/10                 -7.36          -0.35     -1.02             20.76           -10.84         -0.49    -1.22     False
+T3 donchian 55/20                 -6.40          -0.32     -0.91             20.27           -13.10         -0.63    -1.58     False
+                       design gross %/yr  design cost %/yr  design carry %/yr  design markup %/yr  design no-markup ann ret %  design no-markup t  check gross %/yr  check cost %/yr  check carry %/yr  check markup %/yr  check no-markup ann ret %  check no-markup t
+setup                                                                                                                                                                                                                                                                  
+T1 tsmom 63d monthly                1.70              0.77               0.84                6.05                        1.76                0.20            -10.16             0.81             -0.16               7.06                     -11.13              -1.15
+T1 tsmom 126d monthly               1.77              0.61               0.94                6.05                        2.11                0.25            -10.09             0.63             -0.42               7.06                     -11.13              -1.21
+T1 tsmom 252d monthly              -0.80              0.51               1.28                6.05                       -0.02               -0.00             -2.70             0.48             -0.26               7.06                      -3.44              -0.36
+T2 ma-cross 50/200                 -1.42              0.35               0.26                6.13                       -1.51               -0.17            -10.30             0.36             -0.30               6.83                     -10.96              -1.14
+T2 ma-cross 20/100                  0.64              0.70              -0.23                5.99                       -0.29               -0.03            -15.82             0.79             -0.00               6.90                     -16.61              -1.69
+T3 donchian 20/10                  -0.62              2.34              -0.03                4.36                       -2.99               -0.41             -3.17             2.35             -0.18               5.14                      -5.70              -0.64
+T3 donchian 55/20                  -1.67              1.00              -0.07                3.66                       -2.74               -0.39             -7.52             1.04             -0.32               4.22                      -8.88              -1.07

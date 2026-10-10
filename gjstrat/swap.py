@@ -17,6 +17,8 @@ import os
 import numpy as np
 import pandas as pd
 
+from .data import contract_size
+
 NY = "America/New_York"
 FRED_FILES = {"USD": "DFF.csv", "JPY": "IRSTCI01JPM156N.csv", "EUR": "IRSTCI01EZM156N.csv",
               "GBP": "IRSTCI01GBM156N.csv", "AUD": "IRSTCI01AUM156N.csv", "CAD": "IRSTCI01CAM156N.csv",
@@ -38,6 +40,8 @@ class SwapModel:
         return cls(rates, markup_pct)
 
     def rate(self, ccy: str, days: pd.DatetimeIndex) -> np.ndarray:
+        if ccy == "XAU":
+            return np.zeros(len(days))            # gold lease rate ~0: long gold pays the USD rate
         s = self.rates[ccy]
         return s.reindex(s.index.union(days)).ffill().reindex(days).to_numpy()
 
@@ -60,12 +64,13 @@ class SwapModel:
         if r.empty:
             return 0.0, 0
         base, quote = sym[:3], sym[3:]
+        units = lots * contract_size(sym)
         if base == "USD":
-            notional_usd = lots * 100_000
+            notional_usd = units
         elif quote == "USD":
-            notional_usd = lots * 100_000 * price
+            notional_usd = units * price
         elif quote_per_usd is not None:
-            notional_usd = lots * 100_000 * price / quote_per_usd
+            notional_usd = units * price / quote_per_usd
         else:
             raise ValueError(f"swap for {sym}: pass quote_per_usd for a cross")
         idx = pd.DatetimeIndex(r["ny_date"])

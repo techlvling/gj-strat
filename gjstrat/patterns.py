@@ -456,3 +456,21 @@ def night_reversion(m: Market, d: pd.DataFrame, band_std: float, sl_atr: float) 
             out.append(Signal(day, side, start, "market", None, start + 1, sl_atr * r.atr20, tp_d, x,
                               f"night{band_std:g}"))
     return out
+
+
+# --------------------------------------------------------------------------- H: home-hours drift
+def home_hours(m: Market, d: pd.DataFrame, start: tuple[int, int], end: tuple[int, int], tz: str,
+               side: str, sl_atr: float) -> list[Signal]:
+    """Every weekday: market order `side` at `start` local time in `tz`, time exit at `end` (same
+    date, daylight saving aware), SL sl_atr x ATR20. Tests "a currency weakens during its own
+    business hours" (Ranaldo 2009; Breedon & Ranaldo 2013)."""
+    out = []
+    for day, r in d.iterrows():
+        if day.dayofweek >= 5:
+            continue
+        a, b = local_idx(m, day, *start, tz), local_idx(m, day, *end, tz)
+        if a < 0 or b >= m.n:
+            continue
+        out.append(Signal(day, side, a, "market", None, a + 1, sl_atr * r.atr20, None, b,
+                          f"home-{side.lower()}"))
+    return out
