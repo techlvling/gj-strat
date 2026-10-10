@@ -1,0 +1,4 @@
+null,counts,P(pass charter bar),P(random design t >= signal design t),P(random full avg R >= signal avg R),random mean avg R,signal avg R,signal design t
+"MR4: random days, hold 5, SL 2","{'check': 113, 'design': 91, 'holdout': 50}",0.04585,0.07425,0.05635,0.05943798738253058,0.13298163217635867,2.008343770946347
+"MR6: random C>SMA200 days, hold-matched to MR6, SL 2","{'check': 29, 'design': 20, 'holdout': 12}",0.0195,0.02955,0.01,0.04737084921063012,0.23534857245690433,2.27899310327447
+"MR6: random C>SMA200 & C<SMA5 days, MR6 exit rule, SL 2","{'check': 29, 'design': 20, 'holdout': 12}",0.0798,0.12215,0.02145,0.0774200730289009,0.23534857245690433,2.27899310327447
