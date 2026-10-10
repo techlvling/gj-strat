@@ -559,3 +559,19 @@ def test_gotobi_japanese_calendar():
     assert not is_gotobi_jp(pd.Timestamp("2024-02-23"), hol)   # holiday: no fix
     assert is_gotobi_jp(pd.Timestamp("2024-02-22"), hol)       # 25th is Sun -> Fri 23rd is a holiday -> Thu 22nd
     assert is_gotobi_jp(pd.Timestamp("2024-01-05"), set())
+
+
+from gjstrat.patterns import kth_last_weekday, month_end_usd_bid
+
+
+def test_month_end_usd_bid_days_and_times():
+    days = pd.DatetimeIndex(["2024-01-29", "2024-01-31", "2024-03-27", "2024-08-28"])
+    assert list(kth_last_weekday(days)) == [2, 0, 2, 2]        # Mar 29 (Good Friday) still counts
+    m = synthetic_market(days=200)
+    d = daily_table(m)
+    sig = month_end_usd_bid(m, d, "BUY")
+    assert sig and all(kth_last_weekday(pd.DatetimeIndex([s.day]))[0] == 2 for s in sig)
+    for s in sig:
+        assert m.ts(s.start_i).strftime("%H:%M") <= "11:04" and m.ts(s.start_i).hour == 11
+        assert m.ts(s.exit_by_i).strftime("%H:%M") == "12:00" and s.side == "BUY" and s.tp_dist is None
+        assert s.sl_dist == 0.25 * d.loc[s.day, "atr20"]

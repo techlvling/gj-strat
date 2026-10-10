@@ -510,3 +510,32 @@ def gotobi_short(m: Market, d: pd.DataFrame, exit_at: tuple[int, int] = (6, 0), 
         out.append(Signal(day, "SELL", fix, "market", None, fix + 1, sl, None if tp_r is None else tp_r * sl,
                           utc_idx(m, day, *exit_at), f"gotobi-{filt}"))
     return out
+
+
+# --------------------------------------------------------------------------- month-end USD bid
+def kth_last_weekday(days: pd.DatetimeIndex) -> np.ndarray:
+    """Weekdays left in the month after each day: 0 = last weekday, 2 = 3rd-last (holidays ignored)."""
+    D = days.values.astype("datetime64[D]")
+    m1 = (D.astype("datetime64[M]") + np.timedelta64(1, "M")).astype("datetime64[D]")
+    return np.busday_count(D + np.timedelta64(1, "D"), m1)
+
+
+def month_end_usd_bid(m: Market, d: pd.DataFrame, side: str, k: int = 2, at: tuple[int, int] = (11, 0),
+                      exit_at: tuple[int, int] = (12, 0), sl_atr: float = 0.25) -> list[Signal]:
+    """Buy USD on the k-th last weekday of the month (k=2: 3rd-last; flow atlas), market entry at `at` UTC
+    (first traded minute within 5), time exit at `exit_at` UTC, SL sl_atr x ATR20.
+    side: BUY for USDxxx pairs, SELL for xxxUSD pairs."""
+    days = pd.bdate_range(d.index.min(), d.index.max())
+    out = []
+    for day in days[kth_last_weekday(days) == k]:
+        if day not in d.index:
+            continue
+        i, j = utc_idx(m, day, *at), utc_idx(m, day, *exit_at)
+        if i < 0 or j >= m.n - 1:
+            continue
+        live = np.flatnonzero(m.vol[i: i + 5] > 0)
+        if not len(live):
+            continue
+        s = i + live[0]
+        out.append(Signal(day, side, s, "market", None, s + 1, sl_atr * d.loc[day, "atr20"], None, j, "m3-usd"))
+    return out
