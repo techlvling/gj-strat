@@ -467,20 +467,41 @@ def is_month_end_gotobi(day: pd.Timestamp) -> bool:
     return t == day
 
 
+def is_gotobi_jp(day: pd.Timestamp, hol) -> bool:
+    """Gotobi with the Japanese business calendar: 5/10/15/20/25/month-end, moved back to the
+    previous day that is neither a weekend nor a Japanese public holiday (`hol`: date set)."""
+    if day.dayofweek >= 5 or day.date() in hol:
+        return False
+    month_end = (day + pd.offsets.MonthEnd(0)).normalize()
+    for t in [day.replace(day=k) for k in (5, 10, 15, 20, 25)] + [month_end]:
+        while t.dayofweek >= 5 or t.date() in hol:
+            t -= pd.Timedelta(days=1)
+        if t == day:
+            return True
+    return False
+
+
 def gotobi_short(m: Market, d: pd.DataFrame, exit_at: tuple[int, int] = (6, 0), sl_atr: float = 0.25,
-                 tp_r: float | None = None, filt: str = "none") -> list[Signal]:
+                 tp_r: float | None = None, filt: str = "none", calendar: str = "simple",
+                 entry_at: tuple[int, int] = (0, 55)) -> list[Signal]:
     """Gotobi days: SELL at the 09:55 JST fix (00:55 UTC), exit at `exit_at` UTC, SL sl_atr x ATR20,
     optional TP tp_r x SL. filt: 'none', 'runup' (only if bid at the fix is above 08:00 JST),
-    'monthend' (month-end gotobi only) or 'nomonday'."""
+    'monthend' (month-end gotobi only) or 'nomonday'. calendar: 'simple' (weekends only) or 'jp'
+    (also Japanese public holidays). entry_at: UTC entry time (default the 09:55 JST fix)."""
+    hol = set()
+    if calendar == "jp":
+        import holidays
+        hol = set(holidays.Japan(years=range(d.index.min().year, d.index.max().year + 1)))
+    gday = (lambda x: is_gotobi_jp(x, hol)) if calendar == "jp" else is_gotobi
     out = []
     for day, r in d.iterrows():
-        if day.dayofweek >= 5 or not is_gotobi(day):
+        if day.dayofweek >= 5 or not gday(day):
             continue
         if filt == "monthend" and not is_month_end_gotobi(day):
             continue
         if filt == "nomonday" and day.dayofweek == 0:
             continue
-        fix = utc_idx(m, day, 0, 55)
+        fix = utc_idx(m, day, *entry_at)
         if filt == "runup":
             a = utc_idx(m, day - pd.Timedelta(days=1), 23, 0)
             if a < 0 or fix >= m.n or not m.bo[fix] > m.bo[a]:

@@ -551,3 +551,11 @@ def test_gotobi_short_variants():
     for s in up:
         assert m.bo[s.start_i] > m.bo[s.start_i - 115]                # above the 23:00 UTC open
     assert all(s.day.dayofweek != 0 for s in gotobi_short(m, d, filt="nomonday"))
+
+
+def test_gotobi_japanese_calendar():
+    from gjstrat.patterns import is_gotobi_jp
+    hol = {pd.Timestamp("2024-02-23").date()}              # Emperor's Birthday (Fri)
+    assert not is_gotobi_jp(pd.Timestamp("2024-02-23"), hol)   # holiday: no fix
+    assert is_gotobi_jp(pd.Timestamp("2024-02-22"), hol)       # 25th is Sun -> Fri 23rd is a holiday -> Thu 22nd
+    assert is_gotobi_jp(pd.Timestamp("2024-01-05"), set())
