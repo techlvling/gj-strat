@@ -1,0 +1,14 @@
+{'index': 'JPNIDXJPY', 'setup': '1 green box (05:00 IST)', 'trades': 1459, 'win %': np.float64(21.31596984235778), 'avg R': np.float64(-0.11840380534529459), 't': np.float64(-1.7704698401774703), 'years +': '2/12', 'pass': np.False_}
+{'index': 'JPNIDXJPY', 'setup': '2 open-hour box RR9 BE3R', 'trades': 2398, 'win %': np.float64(20.016680567139282), 'avg R': np.float64(-0.04222014742141865), 't': np.float64(-0.7465065684549436), 'years +': '3/14', 'pass': np.False_}
+{'index': 'JPNIDXJPY', 'setup': '3 open-hour box RR2 no BE', 'trades': 2397, 'win %': np.float64(35.33583646224447), 'avg R': np.float64(0.0021686593736854596), 't': np.float64(0.07245583455362344), 'years +': '8/14', 'pass': np.False_}
+{'index': 'USATECHIDXUSD', 'setup': '1 green box (05:00 IST)', 'trades': 2356, 'win %': np.float64(21.434634974533108), 'avg R': np.float64(-0.05983759572338979), 't': np.float64(-1.0727847650851947), 'years +': '5/12', 'pass': np.False_}
+{'index': 'USATECHIDXUSD', 'setup': '2 open-hour box RR9 BE3R', 'trades': 3146, 'win %': np.float64(19.230769230769234), 'avg R': np.float64(0.009876348977758418), 't': np.float64(0.19548865073131613), 'years +': '9/16', 'pass': np.False_}
+{'index': 'USATECHIDXUSD', 'setup': '3 open-hour box RR2 no BE', 'trades': 3146, 'win %': np.float64(34.20216147488875), 'avg R': np.float64(-0.02706586398438398), 't': np.float64(-1.0465807388410904), 'years +': '10/16', 'pass': np.False_}
+                                         trades   win %  avg R      t years +   pass
+index         setup                                                                 
+JPNIDXJPY     1 green box (05:00 IST)      1459  21.316 -0.118 -1.770    2/12  False
+              2 open-hour box RR9 BE3R     2398  20.017 -0.042 -0.747    3/14  False
+              3 open-hour box RR2 no BE    2397  35.336  0.002  0.072    8/14  False
+USATECHIDXUSD 1 green box (05:00 IST)      2356  21.435 -0.060 -1.073    5/12  False
+              2 open-hour box RR9 BE3R     3146  19.231  0.010  0.195    9/16  False
+              3 open-hour box RR2 no BE    3146  34.202 -0.027 -1.047   10/16  False
