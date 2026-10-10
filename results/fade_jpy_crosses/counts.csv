@@ -1,0 +1,13 @@
+rule,pair,filtered_by_bias,skipped_position_open,stop_lt_2x_spread,opposite_zone_tp_lt_1R,tp_fallback_2R
+K3_close_2R,EURJPY,0,8,0,0,0
+K3_close_2R,GBPJPY,0,12,0,0,0
+K3_close_2R,AUDJPY,0,5,1,0,0
+K3_close_2R,CADJPY,0,15,0,0,0
+K3_close_2R,CHFJPY,0,19,0,0,0
+K3_close_2R,USDJPY,0,20,0,0,0
+K3_close_1R,EURJPY,0,7,0,0,0
+K3_close_1R,GBPJPY,0,10,0,0,0
+K3_close_1R,AUDJPY,0,3,1,0,0
+K3_close_1R,CADJPY,0,13,0,0,0
+K3_close_1R,CHFJPY,0,6,0,0,0
+K3_close_1R,USDJPY,0,13,0,0,0

@@ -73,3 +73,45 @@ orders placed 00:30 UTC, expire 05:30 UTC. Only Mon–Fri IST dates are trading 
 * Days with any tick-less minute in the 05:00–05:59 IST range window are skipped and listed.
 * In-sample / out-of-sample split: first 60% / last 40% of tradable days. Combos are ranked by
   in-sample t-stat of mean R only.
+
+## Zone + macro-bias backtest (USDJPY, EURUSD) — `zonemacro/`
+
+```
+python -m pytest tests/test_zone_macro.py -q   # rule-by-rule tests on hand-made candles
+python run_zone_macro.py                       # sweep + benchmarks -> results/zone_macro/REPORT.md
+python -m zonemacro.report                     # rebuild REPORT.md from the CSVs
+```
+
+4H supply/demand zones (base of 1–3 small-body candles, impulse >= K x ATR(14) within 3 candles,
+active only after the impulse candle closes, fresh only: dies at first touch or after 50 4H bars),
+traded only in the direction of a 3-input US macro bias (DGS2−DFF, DGS10 − JGB10/Bund10, US CPI YoY
+from ALFRED first releases; each scored on its 63-trading-day change). Version A = limit at the
+near edge; Version B = 15m break of the last confirmed swing after price enters the zone. Exits:
+fixed 2R or the nearest fresh opposite zone. 24 combos per pair, ranked in-sample only, top 5
+tested out-of-sample, benchmarked against no filter, 1000 random filters and a 200-day trend filter.
+
+| File | What |
+|---|---|
+| `zonemacro/sources.py` | FRED, ALFRED CPI vintages, MoF JGB 10y, Bundesbank Bund 10y, BoJ call rate, ECB DFR, MoF interventions → `zonemacro_data/*.parquet` (committed) |
+| `zonemacro/prices.py` | Dukascopy 1m bid+ask (datastore) → 15m bars by year → `data/cache/*.parquet`; 4H bars; daily closes; data gaps |
+| `zonemacro/macro.py` | release-timed macro values, bias, day filters (macro / none / trend / random) |
+| `zonemacro/zones.py` | ATR, base/impulse/zone detection |
+| `zonemacro/engine.py` | 15m execution (A/B entries, SL/TP, gaps), swap, one-position portfolio pass, stats |
+| `zonemacro/report.py`, `zonemacro/charts.py` | REPORT.md and equity charts |
+
+`python run_zone_alone.py` — the same zones with no day filter, ranked the same way, benchmarked
+against random entries placed inside each zone's own life (same side, stop and target; only the
+timing differs) -> `results/zone_alone/REPORT.md`.
+
+`python run_fade.py` — fade the same 4H impulses (sell after an up impulse, buy after a down
+impulse; entry at the impulse close or after a confirmation candle; stop beyond the impulse
+extreme; targets 1R / 2R / back to the base), benchmarked against a random side at the same
+moment -> `results/fade/REPORT.md`. Rules in `zonemacro/fade.py`, tests in `tests/test_fade.py`.
+
+`python run_jpy_crosses.py` — the USDJPY K3 fade with rules frozen, tested unchanged on EURJPY,
+GBPJPY, AUDJPY, CADJPY and CHFJPY against pass criteria fixed before running ->
+`results/fade_jpy_crosses/REPORT.md`.
+
+`python run_single.py --pair XAUUSD` — the zones-alone (24) and fade (18) sweeps on one
+instrument, same protocol and benchmarks -> `results/xauusd/REPORT.md`. Gold swap assumes a 0%
+lease rate against fed funds.

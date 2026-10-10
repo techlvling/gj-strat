@@ -1,0 +1,45 @@
+{
+ "pair": "XAUUSD",
+ "start": "2010-01-01 00:00:00",
+ "end": "2026-10-07 23:45:00",
+ "split": "2020-01-23 09:27:00",
+ "seeds": 1000,
+ "markup_pct": 0.5,
+ "spread_median": 0.34699999999998,
+ "atr4h_median": 7.600685794610885,
+ "gaps": {
+  "expected_15m_bars": 414304,
+  "missing_15m_bars": 15655,
+  "gaps_ge_1h": 2715
+ },
+ "zones_top5": [
+  "K2_full_B_zone",
+  "K1.5_full_B_zone",
+  "K2_full_B_2R",
+  "K1.5_full_B_2R",
+  "K1.5_body_B_2R"
+ ],
+ "zones_focus": [
+  "K2_full_A_2R",
+  "K2_full_B_zone",
+  "K1.5_full_B_zone",
+  "K2_full_B_2R",
+  "K1.5_full_B_2R",
+  "K1.5_body_B_2R"
+ ],
+ "fade_top5": [
+  "K1.5_close_2R",
+  "K1.5_confirm_1R",
+  "K1.5_close_1R",
+  "K2_close_2R",
+  "K1.5_close_base"
+ ],
+ "fade_focus": [
+  "K2_close_2R",
+  "K1.5_close_2R",
+  "K1.5_confirm_1R",
+  "K1.5_close_1R",
+  "K1.5_close_base"
+ ],
+ "runtime_s": 126
+}
