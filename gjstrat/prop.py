@@ -59,12 +59,16 @@ def prop_table(m: Market, legs: list[tuple[list, np.ndarray]], mixes: dict[str, 
                 dd = max(dd, 1 - bal / peak)
                 eq_t.append(m.ts(T[k].exit_i))
         years = (eq_t[-1] - eq_t[0]).days / 365.25
+        done = res.result != "unfinished"
         rows.append({"mix": name, "challenges": len(res),
+                     "pass ≤1 month %": (passed & (res.days <= 31)).mean() * 100,
                      "pass ≤2 months %": (passed & (res.days <= 61)).mean() * 100,
                      "pass ≤3 months %": (passed & (res.days <= 92)).mean() * 100,
                      "pass ≤6 months %": (passed & (res.days <= 183)).mean() * 100,
                      "fail ≤6 months %": (res.result.str.startswith("fail") & (res.days <= 183)).mean() * 100,
                      "median months to pass": res.days[passed].median() / 30.4,
                      "fails by daily 4% %": (res.result == "fail: daily 4%").mean() * 100,
-                     "max DD %": dd * 100, "per year %": (bal ** (1 / years) - 1) * 100})
+                     "max DD %": dd * 100, "per year %": (bal ** (1 / years) - 1) * 100,
+                     "pass eventually %": passed[done].mean() * 100,
+                     "avg days per attempt": res.days[done].mean()})
     return pd.DataFrame(rows).set_index("mix")
