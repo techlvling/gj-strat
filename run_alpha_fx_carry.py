@@ -463,6 +463,8 @@ def report(L, M, res, mtm, skipped):
     CW = pd.DataFrame([pd.Series(month_summary(series[v][series[v].index >= start]), name=NAMES[v])
                        for v in VARIANTS])
     CW.index.name = "variant"
+    for c in [c for c in CW.columns if c.endswith(" n") or c == "months"]:
+        CW[c] = CW[c].astype(int)
 
     # pooled legs C1-C8 (with duplicates) and unique legs
     pool = pd.concat([variant_legs(L, res, v).dropna(subset=["R"]) for v in VARIANTS[:8]])
@@ -578,8 +580,11 @@ def report(L, M, res, mtm, skipped):
              "last3y t", "survives"]
     lcols = ["trades", "trades/month", "win %", "avg win/avg loss", "avg R", "t", "design avg R", "design t",
              "check avg R", "check t", "holdout avg R", "holdout t", "last3y n", "last3y avg R", "last3y t"]
-    skipped_txt = "none" if skipped is None or len(skipped) == 0 else \
-        fmt_table(skipped.groupby(["why"]).size().rename("legs").to_frame(), ".0f")
+    okm = set(M.index[M.C1_status == "ok"]) | set(M.index[M.C9_status == "ok"]) | set(M.index[M.C3_status == "ok"])
+    sk_ok = skipped[skipped.month.isin(okm)] if skipped is not None and len(skipped) else pd.DataFrame()
+    skipped_txt = (f"{len(skipped) if skipped is not None else 0} planned legs of warm-up months (2010-01..03, no ATR20 "
+                   f"yet) were not simulated; legs skipped inside used months: "
+                   + ("none" if len(sk_ok) == 0 else ", ".join(f"{a}: {b}" for a, b in sk_ok.groupby("why").size().items())))
     drop_txt = ", ".join(f"{v}: {len(d)}" for v, d in drops.items() if d) or "none"
     entry_late = int((~res.entry_live_at_0700).sum()) if "entry_live_at_0700" in res else 0
     txt = ["# Alpha hunt: fx_carry (G8 cross-sectional FX carry with crash-risk switches, dollar carry)\n",
@@ -593,7 +598,7 @@ def report(L, M, res, mtm, skipped):
            "## Monthly portfolio R (mean R of the month's legs; flat month = 0)\n",
            fmt_table(MS[mcols], ".3f"),
            "\nWarm-up months are left out per variant (first month column). Months with legs but no simulated trade "
-           f"(left out): {drop_txt}. Legs skipped: {skipped_txt}. Entries/exits moved past a dead 07:00 minute: "
+           f"(left out): {drop_txt}. {skipped_txt}. Entries/exits moved past a dead 07:00 minute: "
            f"{entry_late} of {len(res)} legs.\n",
            "\n### Same table on the common window (all variants defined, from " + start.strftime("%Y-%m") + ")\n",
            fmt_table(CW[mcols[1:-1]], ".3f"),
