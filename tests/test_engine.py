@@ -531,3 +531,23 @@ def test_index_price_scale_and_pip():
     from gjstrat.data import pip_size, price_scale
     assert price_scale("JPNIDXJPY") == 1000.0 and pip_size("JPNIDXJPY") == 1.0
     assert price_scale("USATECHIDXUSD") == 1000.0 and pip_size("USATECHIDXUSD") == 1.0
+
+
+from gjstrat.patterns import gotobi_short, is_month_end_gotobi
+
+
+def test_gotobi_short_variants():
+    assert is_month_end_gotobi(pd.Timestamp("2024-08-30"))      # Sat 31st -> Fri 30th
+    assert not is_month_end_gotobi(pd.Timestamp("2024-08-20"))
+    m = synthetic_market(days=200)
+    d = daily_table(m)
+    base = gotobi_short(m, d)
+    assert base and all(m.ts(s.start_i).strftime("%H:%M") == "00:55" and s.side == "SELL" for s in base)
+    assert all(s.tp_dist is None for s in base)
+    tp = gotobi_short(m, d, tp_r=2.0)
+    assert all(s.tp_dist == 2.0 * s.sl_dist for s in tp)
+    up = gotobi_short(m, d, filt="runup")
+    assert len(up) < len(base)
+    for s in up:
+        assert m.bo[s.start_i] > m.bo[s.start_i - 115]                # above the 23:00 UTC open
+    assert all(s.day.dayofweek != 0 for s in gotobi_short(m, d, filt="nomonday"))

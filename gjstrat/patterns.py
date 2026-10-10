@@ -456,3 +456,36 @@ def night_reversion(m: Market, d: pd.DataFrame, band_std: float, sl_atr: float) 
             out.append(Signal(day, side, start, "market", None, start + 1, sl_atr * r.atr20, tp_d, x,
                               f"night{band_std:g}"))
     return out
+
+
+# --------------------------------------------------------------------------- gotobi short variants
+def is_month_end_gotobi(day: pd.Timestamp) -> bool:
+    """The month-end gotobi date (last day of the month, moved back to a weekday)."""
+    t = (day + pd.offsets.MonthEnd(0)).normalize()
+    while t.dayofweek >= 5:
+        t -= pd.Timedelta(days=1)
+    return t == day
+
+
+def gotobi_short(m: Market, d: pd.DataFrame, exit_at: tuple[int, int] = (6, 0), sl_atr: float = 0.25,
+                 tp_r: float | None = None, filt: str = "none") -> list[Signal]:
+    """Gotobi days: SELL at the 09:55 JST fix (00:55 UTC), exit at `exit_at` UTC, SL sl_atr x ATR20,
+    optional TP tp_r x SL. filt: 'none', 'runup' (only if bid at the fix is above 08:00 JST),
+    'monthend' (month-end gotobi only) or 'nomonday'."""
+    out = []
+    for day, r in d.iterrows():
+        if day.dayofweek >= 5 or not is_gotobi(day):
+            continue
+        if filt == "monthend" and not is_month_end_gotobi(day):
+            continue
+        if filt == "nomonday" and day.dayofweek == 0:
+            continue
+        fix = utc_idx(m, day, 0, 55)
+        if filt == "runup":
+            a = utc_idx(m, day - pd.Timedelta(days=1), 23, 0)
+            if a < 0 or fix >= m.n or not m.bo[fix] > m.bo[a]:
+                continue
+        sl = sl_atr * r.atr20
+        out.append(Signal(day, "SELL", fix, "market", None, fix + 1, sl, None if tp_r is None else tp_r * sl,
+                          utc_idx(m, day, *exit_at), f"gotobi-{filt}"))
+    return out
