@@ -72,18 +72,19 @@ def main():
         first_pos[trade[pos]] = pos
     ev = {"kind": kind, "trade": trade, "first_pos": first_pos}
     bar_of_pos = np.array([b for b, _, _ in raw])
-    starts = [k for k in range(len(T)) if (k == 0 or cal_day[k] != cal_day[k - 1])
-              and cal_day[k] <= pd.Timestamp("2025-10-07")]
+    last_start = pd.Timestamp("2025-10-07")
 
     rows, curves = [], {}
     for name, (rbox, rgot) in MIXES.items():
         risk = np.where(strat == 0, rbox, rgot).astype(float)
         if (risk == 0).all():
             continue
+        # a challenge starts at the first trade THIS mix takes on each day
+        live = np.flatnonzero(risk > 0)
+        starts = [k for i, k in enumerate(live) if (i == 0 or cal_day[k] != cal_day[live[i - 1]])
+                  and cal_day[k] <= last_start]
         res = []
         for s in starts:
-            if risk[s] == 0:
-                continue
             r, phase, pos = challenge(ev, R, ny_day, cal_day, s, risk)
             res.append((r, (m.ts(bar_of_pos[pos]) - m.ts(T[s].entry_i)).days))
         res = pd.DataFrame(res, columns=["result", "days"])
