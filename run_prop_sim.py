@@ -31,11 +31,13 @@ RISKS = [0.25, 0.5, 0.75, 1.0]
 
 
 def challenge(ev, R, ny_day, ist_day, start_trade, risk, targets=(0.08, 0.06), max_dd=0.10,
-              daily=0.04, min_days=3, consistency=None):
+              daily=0.04, min_days=3, consistency=None, scale=None):
     """Play the challenge from trade `start_trade` (in entry order). `risk` is a % of the
     balance, or a function(balance, floor, target) -> % for dynamic sizing (balances are
     relative: every phase starts at 1.0). consistency: e.g. 0.4 = a phase only passes once no
     single (NY) day made more than 40% of the phase's profit (otherwise keep trading).
+    scale: optional function(pct, balance, phase, target) -> % applied to each new trade's risk
+    (risk rules on top of the per-trade risk; phase 0 = P1).
     Returns (result, phase reached, event position)."""
     phase, bal, open_, days = 0, 1.0, {}, set()
     cur_day, day_start = None, 1.0
@@ -51,6 +53,8 @@ def challenge(ev, R, ny_day, ist_day, start_trade, risk, targets=(0.08, 0.06), m
                 pct = risk[k]                           # per-trade risk (portfolios)
             else:
                 pct = risk
+            if scale is not None:
+                pct = scale(pct, bal, phase, targets[phase])
             open_[k] = pct / 100 * bal
             days.add(ist_day[k])
             continue
