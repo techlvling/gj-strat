@@ -47,7 +47,7 @@ if __name__ == "__main__":
     tab["months per funded account"] = tab["avg days per attempt"] / 30.4 / (tab["pass eventually %"] / 100)
     tab = tab.sort_values("months per funded account")
     tab.to_csv(f"{OUT}/summary.csv")
-    cols = ["pass ≤1 month %", "pass ≤2 months %", "pass ≤3 months %", "pass eventually %", "fails by daily 4% %",
+    cols = ["pass ≤1 month %", "pass ≤2 months %", "pass ≤3 months %", "pass eventually %", "fails by daily limit %",
             "avg days per attempt", "fees per funded account $", "months per funded account", "max DD %"]
     open(f"{OUT}/REPORT.md", "w").write("# Fastest / cheapest route to a funded account (USDJPY box + gotobi)\n\n"
                                         f"Fee ${FEE} per attempt; failed attempts restart at once. Rules in run_prop_speed.py.\n\n"

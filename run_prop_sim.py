@@ -31,12 +31,15 @@ RISKS = [0.25, 0.5, 0.75, 1.0]
 
 
 def challenge(ev, R, ny_day, ist_day, start_trade, risk, targets=(0.08, 0.06), max_dd=0.10,
-              daily=0.04, min_days=3):
+              daily=0.04, min_days=3, consistency=None):
     """Play the challenge from trade `start_trade` (in entry order). `risk` is a % of the
     balance, or a function(balance, floor, target) -> % for dynamic sizing (balances are
-    relative: every phase starts at 1.0). Returns (result, phase reached, event position)."""
+    relative: every phase starts at 1.0). consistency: e.g. 0.4 = a phase only passes once no
+    single (NY) day made more than 40% of the phase's profit (otherwise keep trading).
+    Returns (result, phase reached, event position)."""
     phase, bal, open_, days = 0, 1.0, {}, set()
     cur_day, day_start = None, 1.0
+    day_pnl = {}
     for pos in range(ev["first_pos"][start_trade], len(ev["kind"])):
         k, kind = ev["trade"][pos], ev["kind"][pos]
         if k < start_trade:
@@ -55,15 +58,19 @@ def challenge(ev, R, ny_day, ist_day, start_trade, risk, targets=(0.08, 0.06), m
             continue                                    # opened in a previous phase
         if ny_day[k] != cur_day:
             cur_day, day_start = ny_day[k], bal
-        bal += open_.pop(k) * R[k]
+        pnl = open_.pop(k) * R[k]
+        bal += pnl
+        day_pnl[ny_day[k]] = day_pnl.get(ny_day[k], 0.0) + pnl
         if bal - day_start < -daily * day_start:
             return "fail: daily 4%", phase + 1, pos
         if bal <= 1 - max_dd:
             return "fail: max 10%", phase + 1, pos
-        if bal >= 1 + targets[phase] and len(days) >= min_days:
+        consistent = consistency is None or max(day_pnl.values()) <= consistency * (bal - 1)
+        if bal >= 1 + targets[phase] and len(days) >= min_days and consistent:
             if phase == len(targets) - 1:
                 return "PASS", phase + 1, pos
             phase, bal, open_, days, cur_day = phase + 1, 1.0, {}, set(), None
+            day_pnl = {}
     return "unfinished", phase + 1, len(ev["kind"]) - 1
 
 

@@ -13,8 +13,9 @@ from .data import Market
 
 
 def prop_table(m: Market, legs: list[tuple[list, np.ndarray]], mixes: dict[str, tuple[float, ...]],
-               last_start: str = "2025-10-07") -> pd.DataFrame:
-    """legs: [(trades, net R array aligned with trades), ...]; mixes: name -> risk % per leg."""
+               last_start: str = "2025-10-07", **rules) -> pd.DataFrame:
+    """legs: [(trades, net R array aligned with trades), ...]; mixes: name -> risk % per leg.
+    rules: passed to run_prop_sim.challenge (targets, max_dd, daily, min_days, consistency)."""
     from run_prop_sim import challenge
     trades = [(t, r, s) for s, (tr, rs) in enumerate(legs) for t, r in zip(tr, rs)]
     trades.sort(key=lambda x: (x[0].entry_i, x[0].exit_i, x[2]))
@@ -42,7 +43,7 @@ def prop_table(m: Market, legs: list[tuple[list, np.ndarray]], mixes: dict[str, 
                   and cal_day[k] <= pd.Timestamp(last_start)]
         res = []
         for s in starts:
-            r, _, pos = challenge(ev, R, ny_day, cal_day, s, risk)
+            r, _, pos = challenge(ev, R, ny_day, cal_day, s, risk, **rules)
             res.append((r, (m.ts(bar_of_pos[pos]) - m.ts(T[s].entry_i)).days))
         res = pd.DataFrame(res, columns=["result", "days"])
         passed = res.result == "PASS"
@@ -67,7 +68,7 @@ def prop_table(m: Market, legs: list[tuple[list, np.ndarray]], mixes: dict[str, 
                      "pass ≤6 months %": (passed & (res.days <= 183)).mean() * 100,
                      "fail ≤6 months %": (res.result.str.startswith("fail") & (res.days <= 183)).mean() * 100,
                      "median months to pass": res.days[passed].median() / 30.4,
-                     "fails by daily 4% %": (res.result == "fail: daily 4%").mean() * 100,
+                     "fails by daily limit %": (res.result == "fail: daily 4%").mean() * 100,
                      "max DD %": dd * 100, "per year %": (bal ** (1 / years) - 1) * 100,
                      "pass eventually %": passed[done].mean() * 100,
                      "avg days per attempt": res.days[done].mean()})
