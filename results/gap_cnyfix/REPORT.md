@@ -1,0 +1,29 @@
+# Monday gap fill (28 FX + gold) and China CNY-fix minute (AUD, NZD), 2010–2026
+
+Rules in run_gap_cnyfix.py.
+
+## A. Gap fill, pooled over 29 markets — survivors: **0 of 8**
+
+| variant | trades | win % | design avg R | design t | check avg R | check t | holdout avg R | holdout t | markets positive | survives |
+|---|---|---|---|---|---|---|---|---|---|---|
+| entry +0m, gap >= 0.1 ATR, SL = gap | 9396 | 32.599 | -0.405 | -26.625 | -0.713 | -29.038 | -0.722 | -20.520 | 0/29 | False |
+| entry +0m, gap >= 0.1 ATR, SL 0.25 ATR | 9396 | 48.765 | -0.077 | -5.884 | -0.258 | -14.224 | -0.513 | -15.918 | 3/29 | False |
+| entry +0m, gap >= 0.25 ATR, SL = gap | 3760 | 44.255 | -0.051 | -2.419 | -0.306 | -10.006 | -0.517 | -12.012 | 3/29 | False |
+| entry +0m, gap >= 0.25 ATR, SL 0.25 ATR | 3760 | 38.989 | 0.025 | 0.896 | -0.224 | -5.935 | -0.510 | -10.674 | 7/29 | False |
+| entry +60m, gap >= 0.1 ATR, SL = gap | 8952 | 32.853 | -0.497 | -29.010 | -0.749 | -26.771 | -0.721 | -15.440 | 0/29 | False |
+| entry +60m, gap >= 0.1 ATR, SL 0.25 ATR | 8952 | 50.156 | -0.161 | -12.020 | -0.252 | -14.678 | -0.157 | -5.715 | 0/29 | False |
+| entry +60m, gap >= 0.25 ATR, SL = gap | 3779 | 39.428 | -0.246 | -11.345 | -0.521 | -12.775 | -0.518 | -8.743 | 0/29 | False |
+| entry +60m, gap >= 0.25 ATR, SL 0.25 ATR | 3779 | 41.916 | -0.163 | -6.346 | -0.286 | -8.601 | -0.139 | -3.357 | 2/29 | False |
+
+## B. CNY fix minute — survivors: **0 of 8**
+
+| test | design n | win % | design avg R | design t | check avg R | check t | holdout avg R | holdout t | survives |
+|---|---|---|---|---|---|---|---|---|---|
+| CNY fix AUDUSD follow 01:30 -> 2:30 UTC | 2006 | 39.431 | -0.103 | -7.178 | -0.130 | -8.292 | -0.155 | -6.914 | False |
+| CNY fix AUDUSD follow 01:30 -> 3:30 UTC | 2006 | 41.430 | -0.092 | -5.394 | -0.147 | -7.864 | -0.154 | -5.880 | False |
+| CNY fix AUDUSD fade 01:30 -> 2:30 UTC | 2006 | 41.218 | -0.075 | -4.993 | -0.123 | -8.217 | -0.119 | -5.315 | False |
+| CNY fix AUDUSD fade 01:30 -> 3:30 UTC | 2006 | 41.806 | -0.087 | -4.945 | -0.104 | -5.615 | -0.133 | -4.630 | False |
+| CNY fix NZDUSD follow 01:30 -> 2:30 UTC | 2006 | 37.576 | -0.133 | -10.586 | -0.137 | -9.447 | -0.164 | -7.583 | False |
+| CNY fix NZDUSD follow 01:30 -> 3:30 UTC | 2006 | 39.882 | -0.138 | -9.089 | -0.134 | -7.648 | -0.148 | -5.441 | False |
+| CNY fix NZDUSD fade 01:30 -> 2:30 UTC | 2006 | 39.365 | -0.122 | -10.365 | -0.122 | -7.752 | -0.128 | -5.467 | False |
+| CNY fix NZDUSD fade 01:30 -> 3:30 UTC | 2006 | 40.518 | -0.124 | -8.410 | -0.118 | -5.933 | -0.141 | -4.885 | False |
