@@ -112,6 +112,10 @@ SEPARATENESS / DIAGNOSTICS (reporting only):
   * Share of pair-weeks in position (Y1-Y4) and of close days in position (FV).
   * Sum of R by year for the pooled tests.
 
+ADDED AFTER THE FIRST RUN (reporting only; no rule, variant, market, cost or bar changed): a gross vs net
+(cost per trade) table for the judged tests and a written findings section whose numbers are read from the
+result tables.
+
 OUTPUT: results/alpha_hunt/fx_rates/REPORT.md (+ tests.csv, pooled.csv, trades.csv, monthly.csv, betas.csv,
 fv_series.csv, corr.csv, by_year.csv, run.log).
 
@@ -592,6 +596,69 @@ def corr_block(monthly: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows).set_index("series")
 
 
+def findings(pooled, corr, agree, betas, gn, tests, common) -> list[str]:
+    """Written after the first run; every number is read from the result tables."""
+    P = lambda v, c: pooled.loc[v, c]
+    surv = [v for v in JUDGED if P(v, "passes bar")]
+    ys = ["Y1", "Y2", "Y3", "Y4"]
+    fvs = list(FVV)
+    best = max([v for v in JUDGED if not P(v, "passes bar")],
+               key=lambda v: int(P(v, "check avg R") > 0) + int(P(v, "holdout avg R") > 0) + P(v, "design month t") / 10)
+    out = ["## Findings (written after the first run; numbers are read from the tables)\n"]
+    out.append(f"- **{len(surv)} of {len(JUDGED)} judged tests survive** ({len(JUDGED) * 0.006:.2f} expected by luck). "
+               f"No per-pair test passes either ({int(tests['passes bar'].sum())} of {len(tests)}).")
+    out.append(f"- **Yield momentum, time series (Y1-Y4)** is flat: pooled avg R per weekly trade ranges "
+               f"{min(P(v, 'avg R') for v in ys):+.3f} to {max(P(v, 'avg R') for v in ys):+.3f}, design month t "
+               f"{min(P(v, 'design month t') for v in ys):+.2f} to {max(P(v, 'design month t') for v in ys):+.2f}; "
+               f"gross before costs only {min(gn.loc[v, 'gross_avg_R'] for v in ys):+.3f} to "
+               f"{max(gn.loc[v, 'gross_avg_R'] for v in ys):+.3f}R (costs {gn.loc[ys, 'cost per trade (R)'].mean():.3f}R "
+               f"per weekly trade). Y4 (L=126) loses in the holdout ({P('Y4', 'holdout avg R'):+.3f}R, "
+               f"month t {P('Y4', 'holdout month t'):+.2f}). Y1 positions agree with the 63-day price-momentum sign in "
+               f"{agree.loc['all', 'agree_mom_pct']:.0f}% of active pair-weeks, Y1 monthly R correlates "
+               f"{corr.loc['Y1', 'corr MOMTS']:+.2f} with time-series price momentum (loading t "
+               f"{corr.loc['Y1', 't MOMTS']:+.2f}) and its alpha after carry and momentum is "
+               f"{corr.loc['Y1', 'alpha (monthly R)']:+.3f}R/month (t {corr.loc['Y1', 'alpha t']:+.2f}). In this "
+               f"sample the 2y-spread change is mostly a noisy copy of price momentum, not a separate edge.")
+    out.append(f"- **Cross-sectional yield momentum (Y5)** is wrong-signed in design ({P('Y5', 'design avg R'):+.3f}R "
+               f"per month, t {P('Y5', 'design t'):+.2f}) and check ({P('Y5', 'check avg R'):+.3f}, t "
+               f"{P('Y5', 'check t'):+.2f}), about flat in the holdout ({P('Y5', 'holdout avg R'):+.3f}); gross "
+               f"{gn.loc['Y5', 'gross_avg_R']:+.3f}R per leg. After controlling for carry and momentum the alpha is "
+               f"{corr.loc['Y5', 'alpha (monthly R)']:+.3f}R/month (t {corr.loc['Y5', 'alpha t']:+.2f}). Currencies "
+               f"whose 2y yield rose most over 3 months tended to lag the next month. The mirror image is not a "
+               f"test here (post hoc) and would not pass anyway: |design t| = {abs(P('Y5', 'design t')):.2f} < 2 "
+               f"before paying costs on the reversed legs. Y5 legs overlap the carry legs "
+               f"{common.carry.mean() * 100:.0f}% and the price-momentum legs {common.momxs.mean() * 100:.0f}% of the time.")
+    out.append(f"- **Fair-value residual (FV1-FV5)**: only the 250-day change model with k = 2 (FV2) is positive in "
+               f"all three periods ({P('FV2', 'design avg R'):+.3f} / {P('FV2', 'check avg R'):+.3f} / "
+               f"{P('FV2', 'holdout avg R'):+.3f}R, {int(P('FV2', 'pairs avg R > 0'))} of 5 pairs positive), but "
+               f"its design month t is {P('FV2', 'design month t'):+.2f} (needs 2) on {int(P('FV2', 'design n'))} "
+               f"design trades and the holdout has only {int(P('FV2', 'holdout n'))} trades. FV1 (k = 1.5) is "
+               f"{P('FV1', 'design avg R'):+.3f}R in design. The level models (FV4, FV5) and the 60-day change "
+               f"model (FV3) lose in design (avg R {min(P(v, 'design avg R') for v in ('FV3', 'FV4', 'FV5')):+.3f} "
+               f"to {max(P(v, 'design avg R') for v in ('FV3', 'FV4', 'FV5')):+.3f}; FV5 trade-level t "
+               f"{P('FV5', 'design t'):+.2f}); holdout avg R FV3 {P('FV3', 'holdout avg R'):+.3f}, FV4 "
+               f"{P('FV4', 'holdout avg R'):+.3f}, FV5 {P('FV5', 'holdout avg R'):+.3f}. Positive only in later "
+               f"periods is the regime dependence the charter bar is built to reject. "
+               f"About {np.mean([P(v, 'SL %') for v in fvs]):.0f}% of FV trades hit the 2 ATR stop.")
+    jy = tests[(tests.pair == "USDJPY") & tests.variant.isin(fvs)]
+    out.append(f"- **USDJPY is the weak pair for fair value** (design avg R {jy['design avg R'].min():+.3f} to "
+               f"{jy['design avg R'].max():+.3f} across FV1-FV5), consistent with the pinned-JGB risk: the median "
+               f"USDJPY level beta (M2, W=250) fell from {betas.loc['USDJPY', 'M2_250 design']:.3f} in design to "
+               f"{betas.loc['USDJPY', 'M2_250 check']:.3f} in check. The daily-change link itself is stable in "
+               f"sign (M1 W=250 beta positive on nearly all days in check and holdout for every pair), so the "
+               f"rates/FX relation is real contemporaneously; its residual just does not revert profitably over "
+               f"1-3 weeks after costs, 2 ATR stops and the one-day input lag.")
+    out.append(f"- **Best non-survivor: {best}** ({NAMES[best]}): avg R {P(best, 'avg R'):+.3f}, design month t "
+               f"{P(best, 'design month t'):+.2f}, check {P(best, 'check avg R'):+.3f}, holdout "
+               f"{P(best, 'holdout avg R'):+.3f}, last 3 years {P(best, 'last3y avg R'):+.3f} "
+               f"({int(P(best, 'last3y n'))} trades, about {P(best, 'trades/month'):.1f} trades/month pooled). "
+               f"Too thin and too weak in design to trade or to add to the prop basket.")
+    out.append("- Practical conclusion: nothing from this family goes into the Alpha Swing basket. 2y-yield "
+               "momentum and rate fair value do not give a tradeable edge on these 5 USD pairs (2010-2026) at "
+               "weekly to monthly horizons with real costs.\n")
+    return out
+
+
 # --------------------------------------------------------------------------- main
 def compute():
     os.makedirs(OUT, exist_ok=True)
@@ -815,6 +882,12 @@ def report(raw):
     cov = Y.groupby(Y.index.year).apply(lambda d: d.notna().mean() * 100).round(1)
     cov.index.name = "year"
 
+    # ---------------- gross vs net (added after the first run, reporting only)
+    gn = tr.groupby("variant").agg(trades=("R", "size"), gross_avg_R=("R_gross", "mean"), net_avg_R=("R", "mean"))
+    gn["cost per trade (R)"] = gn.gross_avg_R - gn.net_avg_R
+    gn = gn.loc[[v for v in JUDGED if v in gn.index]]
+    gn.index.name = "variant (Y5 leg-level)"
+
     # ---------------- report
     surv = [v for v in JUDGED if pooled.loc[v, "passes bar"]]
     L = []
@@ -837,6 +910,9 @@ def report(raw):
             "holdout n", "holdout avg R", "holdout month t", "last3y n", "last3y avg R", "last3y month t",
             "pairs avg R > 0", "SL %", "avg hold days", "passes bar"]
     L.append(fmt_table(pooled[cols], ".3f") + "\n")
+    L.extend(findings(pooled, corr, agree, betas, gn, tests, common))
+    L.append("## Gross vs net (cost per trade in R)\n")
+    L.append(fmt_table(gn, ".4f") + "\n")
     L.append("## Per pair (information only; trade-level t)\n")
     tcols = ["variant", "pair", "trades", "trades/month", "win %", "avg win / avg loss", "avg R", "t", "design n",
              "design avg R", "design t", "check n", "check avg R", "check t", "holdout n", "holdout avg R",

@@ -21,6 +21,31 @@ month t = month-clustered t (sum of R per calendar month of the entry day, zero 
 | FV4 | FV M2 W=250 k=2 | 438 | 2.293 | 41.781 | 1.238 | -0.056 | -1.038 | -0.925 | 191 | -0.092 | -1.165 | -0.990 | 179 | 0.009 | 0.095 | 68 | -0.126 | -0.898 | 73 | -0.083 | -0.699 | 1 | 43.151 | 15.187 | False |
 | FV5 | FV M2 W=60 k=2 | 769 | 3.845 | 47.984 | 1.023 | -0.026 | -0.713 | -0.628 | 352 | -0.113 | -2.228 | -1.800 | 291 | 0.013 | 0.189 | 126 | 0.129 | 1.513 | 143 | 0.091 | 1.219 | 2 | 39.662 | 12.630 | False |
 
+## Findings (written after the first run; numbers are read from the tables)
+
+- **0 of 10 judged tests survive** (0.06 expected by luck). No per-pair test passes either (0 of 45).
+- **Yield momentum, time series (Y1-Y4)** is flat: pooled avg R per weekly trade ranges -0.011 to +0.005, design month t -0.74 to +0.68; gross before costs only +0.003 to +0.018R (costs 0.013R per weekly trade). Y4 (L=126) loses in the holdout (-0.064R, month t -2.02). Y1 positions agree with the 63-day price-momentum sign in 75% of active pair-weeks, Y1 monthly R correlates +0.27 with time-series price momentum (loading t +3.52) and its alpha after carry and momentum is -0.094R/month (t -0.78). In this sample the 2y-spread change is mostly a noisy copy of price momentum, not a separate edge.
+- **Cross-sectional yield momentum (Y5)** is wrong-signed in design (-0.118R per month, t -1.78) and check (-0.123, t -1.87), about flat in the holdout (-0.010); gross -0.065R per leg. After controlling for carry and momentum the alpha is -0.105R/month (t -2.47). Currencies whose 2y yield rose most over 3 months tended to lag the next month. The mirror image is not a test here (post hoc) and would not pass anyway: |design t| = 1.78 < 2 before paying costs on the reversed legs. Y5 legs overlap the carry legs 17% and the price-momentum legs 33% of the time.
+- **Fair-value residual (FV1-FV5)**: only the 250-day change model with k = 2 (FV2) is positive in all three periods (+0.025 / +0.101 / +0.355R, 4 of 5 pairs positive), but its design month t is +0.23 (needs 2) on 82 design trades and the holdout has only 26 trades. FV1 (k = 1.5) is -0.013R in design. The level models (FV4, FV5) and the 60-day change model (FV3) lose in design (avg R -0.113 to -0.092; FV5 trade-level t -2.23); holdout avg R FV3 +0.058, FV4 -0.126, FV5 +0.129. Positive only in later periods is the regime dependence the charter bar is built to reject. About 40% of FV trades hit the 2 ATR stop.
+- **USDJPY is the weak pair for fair value** (design avg R -0.426 to -0.187 across FV1-FV5), consistent with the pinned-JGB risk: the median USDJPY level beta (M2, W=250) fell from 0.185 in design to 0.045 in check. The daily-change link itself is stable in sign (M1 W=250 beta positive on nearly all days in check and holdout for every pair), so the rates/FX relation is real contemporaneously; its residual just does not revert profitably over 1-3 weeks after costs, 2 ATR stops and the one-day input lag.
+- **Best non-survivor: FV2** (FV M1 W=250 k=2): avg R +0.103, design month t +0.23, check +0.101, holdout +0.355, last 3 years +0.355 (26 trades, about 1.0 trades/month pooled). Too thin and too weak in design to trade or to add to the prop basket.
+- Practical conclusion: nothing from this family goes into the Alpha Swing basket. 2y-yield momentum and rate fair value do not give a tradeable edge on these 5 USD pairs (2010-2026) at weekly to monthly horizons with real costs.
+
+## Gross vs net (cost per trade in R)
+
+| variant (Y5 leg-level) | trades | gross_avg_R | net_avg_R | cost per trade (R) |
+|---|---|---|---|---|
+| Y1 | 1369.0000 | 0.0034 | -0.0104 | 0.0138 |
+| Y2 | 4301.0000 | 0.0025 | -0.0106 | 0.0132 |
+| Y3 | 1940.0000 | 0.0182 | 0.0054 | 0.0128 |
+| Y4 | 2059.0000 | 0.0034 | -0.0101 | 0.0135 |
+| Y5 | 772.0000 | -0.0653 | -0.1014 | 0.0360 |
+| FV1 | 438.0000 | 0.0555 | 0.0262 | 0.0293 |
+| FV2 | 193.0000 | 0.1282 | 0.1031 | 0.0251 |
+| FV3 | 208.0000 | -0.0527 | -0.0831 | 0.0305 |
+| FV4 | 438.0000 | -0.0114 | -0.0560 | 0.0446 |
+| FV5 | 769.0000 | 0.0071 | -0.0257 | 0.0328 |
+
 ## Per pair (information only; trade-level t)
 
 | variant | pair | trades | trades/month | win % | avg win / avg loss | avg R | t | design n | design avg R | design t | check n | check avg R | check t | holdout n | holdout avg R | holdout t | last3y n | last3y avg R | last3y t | SL % | avg hold days | passes bar |

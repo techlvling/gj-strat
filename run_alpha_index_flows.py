@@ -92,8 +92,17 @@ normal risk and boost x1.5, challenges started 2011-2025 and 2018-2025; accepted
 account is lower and pass eventually % not lower in both windows. Nasdaq trades join the USDJPY grid at
 (UTC time - m_usdjpy.t0) minutes.
 
+POST-HOC (added AFTER the first run had been seen; never candidates, never counted as survivors):
+  H1  mirror of O2, because O2 was strongly negative: BUY at the close on X, time exit at the close of the
+      last trading day of the following week, SL 2.0 x ATR20. Data-snooped by construction.
+  H2  half-day G fill: in ~10 months G was missing because pme or s is a half day (day after Thanksgiving,
+      Dec 31 in the CFD data) with no 16:00 / 15:55 price. Re-run P1-P4 and C3 (suffix "h") with the
+      day's last live price at or before 16:00 NY used when the close is missing (S&P: last live hourly
+      bar starting 09:00-15:00; Nasdaq: last live minute 09:30-15:59, bid close). Sensitivity only.
+
     python run_alpha_index_flows.py          # everything (prop sim only if a candidate survives)
     python run_alpha_index_flows.py prop     # prop sim from the saved trades
+    python run_alpha_index_flows.py posthoc  # H1 / H2 (appends to REPORT.md)
 """
 from __future__ import annotations
 
@@ -129,7 +138,7 @@ VARIANTS = {  # name: (SL x ATR20, description, candidate?)
     "O3": (2.0, "O1 quarterly months", True),
     "O4": (2.0, "O2 quarterly months", True),
     "P1": (1.5, "rebalance: s -> ME, against sign(G)", True),
-    "P2": (1.5, "P1 with |G| > 2%", True),
+    "P2": (1.5, "P1 with abs(G) > 2%", True),
     "P3": (1.5, "P1 quarter-end months", True),
     "P4": (1.0, "TOM long ME -> TD3 when G > 0", True),
     "C1": (2.0, "control: long non-expiry weeks", False),
@@ -138,6 +147,9 @@ VARIANTS = {  # name: (SL x ATR20, description, candidate?)
     "C4": (1.0, "control: E1b TOM long unconditional", False),
 }
 CANDS = [v for v, x in VARIANTS.items() if x[2]]
+POSTHOC = {"H1": (2.0, "post-hoc: long X -> end of next week (O2 mirror)", False),
+           **{f"{v}h": (VARIANTS[v][0], VARIANTS[v][1] + " [half-day G fill]", False) for v in ("P1", "P2", "P3", "P4", "C3")}}
+SLM = {v: x[0] for v, x in {**VARIANTS, **POSTHOC}.items()}
 
 
 # --------------------------------------------------------------------------- calendar
@@ -304,7 +316,7 @@ def run_nasdaq(plans, m, d, nqc) -> pd.DataFrame:
             continue
         s = live_at(m, local_idx(m, a, 15, 55, NY))
         x = local_idx(m, b, 15, 55, NY)
-        sl = VARIANTS[v][0] * atr.get(a, np.nan)
+        sl = SLM[v] * atr.get(a, np.nan)
         if s < 0 or x <= s + 1 or x >= m.n or not sl > 0:
             continue
         o = max(local_idx(m, b, 9, 30, NY), 0)
@@ -334,7 +346,7 @@ def run_spx(plans, b: pd.DataFrame, cs: pd.DataFrame) -> pd.DataFrame:
     for v, a, xd, side, g in plans:
         if a is None or xd is None or xd <= a or a not in cs.index or xd not in cs.index:
             continue
-        sl = VARIANTS[v][0] * cs.atr20[a]
+        sl = SLM[v] * cs.atr20[a]
         if not sl > 0:
             continue
         Ca, Cx = cs.C[a], cs.C[xd]
@@ -365,6 +377,16 @@ def run_spx(plans, b: pd.DataFrame, cs: pd.DataFrame) -> pd.DataFrame:
 
 
 # --------------------------------------------------------------------------- statistics
+def ft(df: pd.DataFrame, fmt: str = ".3f") -> str:
+    """fmt_table with a flattened MultiIndex and integer counts kept as integers (report formatting only)."""
+    df = df.copy()
+    if isinstance(df.index, pd.MultiIndex):
+        name = " · ".join(str(x) for x in df.index.names)
+        df.index = [" · ".join(str(x) for x in k) for k in df.index]
+        df.index.name = name
+    return fmt_table(df.astype(object), fmt)
+
+
 def label(ts) -> pd.DatetimeIndex:
     ts = pd.DatetimeIndex(ts)
     return (ts.tz_localize("UTC").tz_convert(NY).tz_localize(None) + pd.Timedelta(hours=7)).normalize()
@@ -548,7 +570,7 @@ def main():
                           "n": len(r), "avg R": r.mean(), "t": tstat(r), "win %": (r > 0).mean() * 100,
                           "dir hit %": g.dir_hit.mean() * 100})
         gstats.append({"market": NAMES[sym], "months with G": len(gs), "G>0 months": int((gs > 0).sum()),
-                       "|G|>2% months": int((gs.abs() > 0.02).sum()), "G tercile cut 1": cut[0], "G tercile cut 2": cut[1],
+                       "abs(G)>2% months": int((gs.abs() > 0.02).sum()), "G tercile cut 1": cut[0], "G tercile cut 2": cut[1],
                        "G mean": gs.mean(), "G sd": gs.std()})
     GT = pd.DataFrame(gterc).set_index(["market", "variant", "tercile"])
     GT.to_csv(f"{OUT}/g_terciles.csv")
@@ -571,8 +593,8 @@ def main():
                        "worst day % (realised)": pr.min(), "date ": pr.idxmin().date(), "days < -0.5% (MTM)": int((pm < -0.5).sum()),
                        "worst trade R": T[(T.market == s) & (T.variant == v)].R.min()})
     for nm, vs in (("all 8 candidates at 0.5% each", CANDS), ("O1 + O2 + P1 + P4 at 0.5% each", ["O1", "O2", "P1", "P4"])):
-        pm = pd.concat([pd.Series(mtm[(NQ, v)]) for v in vs], axis=1).fillna(0).sum(axis=1) * 0.5
-        pr = pd.concat([pd.Series(rea[(NQ, v)]) for v in vs], axis=1).fillna(0).sum(axis=1) * 0.5
+        pm = pd.concat([pd.Series(mtm[(NQ, v)]) for v in vs], axis=1, sort=True).fillna(0).sum(axis=1) * 0.5
+        pr = pd.concat([pd.Series(rea[(NQ, v)]) for v in vs], axis=1, sort=True).fillna(0).sum(axis=1) * 0.5
         wd.append({"market": "Nasdaq 100", "set": nm, "worst day % (MTM)": pm.min(), "date": pm.idxmin().date(),
                    "worst day % (realised)": pr.min(), "date ": pr.idxmin().date(), "days < -0.5% (MTM)": int((pm < -0.5).sum()),
                    "worst trade R": T[(T.market == NQ) & T.variant.isin(vs)].R.min()})
@@ -593,14 +615,14 @@ def main():
         x = R[R.market == sym].set_index("variant")[cols].copy()
         x.index = [f"{v} {VARIANTS[v][1]}" for v in x.index]
         x.index.name = "variant"
-        return fmt_table(x, ".3f")
+        return ft(x, ".3f")
 
     n_tests = len(CANDS)
     s_list = ", ".join(f"Nasdaq {v}" for v in surv) or "none"
     def yr_tab(sym):
         y = YR.loc[sym].reindex(list(VARIANTS))
         y.index.name = "variant"
-        return fmt_table(y, ".2f")
+        return ft(y, ".2f")
     txt = ["# Alpha hunt: index calendar flows - option expiry and month-end pension rebalancing (`index_flows`)\n",
            "Rules, variants and the survival bar are in the docstring of `run_alpha_index_flows.py` (fixed before running). "
            "Swing trades of 3-7 trading days on the close, long and short, stops 1-2 x ATR20 (Nasdaq checked minute by minute "
@@ -610,23 +632,23 @@ def main():
            f"Survivors of the charter bar (design t >= 2, check and holdout avg R > 0): {len(surv)} ({s_list}). "
            f"Expected by luck: {n_tests * 0.006:.2f}.**\n",
            "## Judging (candidates)\n", "Nasdaq gets the charter bar; the S&P replicates if its avg R > 0 over the whole period.\n",
-           fmt_table(judge, ".3f"), "\n",
+           ft(judge, ".3f"), "\n",
            f"## Nasdaq 100 ({NQ})\n", f"Months with data: {months[NQ]}. trades/month = trades / months with data. "
            "dir hit % = share of trades whose planned close-to-close window moved in the trade's direction (ignores the stop).\n",
            tab(NQ), "\n",
            f"## S&P 500 ({SP}, hourly) - replication\n", f"Months with data: {months[SP]}.\n", tab(SP), "\n",
-           "## Option expiry: 2011-2021 vs 2022+ (0DTE era)\n", fmt_table(OS, ".3f"), "\n",
+           "## Option expiry: 2011-2021 vs 2022+ (0DTE era)\n", ft(OS, ".3f"), "\n",
            "## Pension rebalancing: the stock-bond gap G\n",
            f"G source by month: {src_counts} (S&P hourly closes; Nasdaq fallback). Nasdaq trades use the look-ahead-free G "
            f"(S&P 15:00 price on day s); S&P trades use the 16:00 close. Months where the sign of G differs between the two: "
-           f"{sign_diff} of {len(both)}; where |G| > 2% differs: {thr_diff}.\n",
-           fmt_table(GS, ".4f"), "\n",
+           f"{sign_diff} of {len(both)}; where abs(G) > 2% differs: {thr_diff}.\n",
+           ft(GS, ".4f"), "\n",
            "### Avg R by G tercile (full-sample tercile cut-offs of each market's G; descriptive only)\n",
            "P1-P3 trade against sign(G) (low tercile = BUY, high = SELL); P4 / C3 / C4 / C2 are longs. dir hit % = the planned "
-           "window moved the predicted way.\n", fmt_table(GT, ".3f"), "\n",
+           "window moved the predicted way.\n", ft(GT, ".3f"), "\n",
            "## Worst single day at 0.5% risk per trade\n",
            "MTM = open trades marked at each close, booked by NY trading day (17:00 roll); realised = net R on the exit day.\n",
-           fmt_table(WD, ".2f"), "\n",
+           ft(WD, ".2f"), "\n",
            "## Avg R per trade by year\n", "### Nasdaq 100\n", yr_tab(NQ), "\n", "### S&P 500\n", yr_tab(SP), "\n"]
     open(f"{OUT}/REPORT.md", "w").write("\n".join(txt))
     pd.set_option("display.width", 250); pd.set_option("display.max_columns", 40)
@@ -644,8 +666,106 @@ def main():
     print("DONE", flush=True)
 
 
+# --------------------------------------------------------------------------- post-hoc (after the first run)
+def day_close_fallback_nq(m, day):
+    a, b = local_idx(m, day, 9, 30, NY), local_idx(m, day, 16, 0, NY)
+    if a < 0 or b >= m.n:
+        return np.nan
+    w = np.flatnonzero(m.vol[a:b] > 0)
+    return float(m.bc[a + w[-1]]) if len(w) else np.nan
+
+
+def posthoc():
+    os.makedirs(OUT, exist_ok=True)
+    dgs = load_dgs10()
+    M = month_frame()
+    G0 = pd.read_csv(f"{OUT}/g_months.csv")
+    G0.index = pd.PeriodIndex(G0.month, freq="M")
+    b = spx_bars()
+    spc, _ = spx_closes(b)
+    loc = b.index.tz_localize("UTC").tz_convert(NY).tz_localize(None)
+    live = pd.Series(b.c.to_numpy()[(loc.hour >= 9) & (loc.hour <= 15)], index=loc.normalize()[(loc.hour >= 9) & (loc.hour <= 15)])
+    sp_last = live.groupby(level=0).last()                     # last live bar close of each NY date
+    m = load_market(NQ_PATH)
+    d = daily_table(m)
+    nqc = nq_closes(m)
+    need = sorted(set(M.s) | set(M.pme))
+    sp16 = {x: spc.C[x] if x in spc.index else sp_last.get(x, np.nan) for x in need}
+    sp15 = {x: spc.O15[x] if x in spc.index else sp_last.get(x, np.nan) for x in need}
+    nqx = {x: nqc.C[x] if x in nqc.index else day_close_fallback_nq(m, x) for x in need}
+    rows = []
+    for per, r in M.iterrows():
+        s_, p_ = r.s, r.pme
+        sp_ok = np.isfinite(sp16[s_]) and np.isfinite(sp16[p_])
+        nq_ok = np.isfinite(nqx[s_]) and np.isfinite(nqx[p_])
+        bond = -DUR * (asof(dgs, s_, True) - asof(dgs, p_, False)) / 100
+        eqs16 = sp16[s_] / sp16[p_] - 1 if sp_ok else np.nan
+        eqs15 = sp15[s_] / sp16[p_] - 1 if sp_ok else np.nan
+        eqn = nqx[s_] / nqx[p_] - 1 if nq_ok else np.nan
+        rows.append({"month": per, "G_sp_alt": (eqs16 if sp_ok else eqn) - bond, "G_nq_alt": (eqs15 if sp_ok else eqn) - bond,
+                     "src_alt": "S&P" if sp_ok else ("Nasdaq" if nq_ok else "none")})
+    GA = pd.DataFrame(rows).set_index("month")
+    GA = GA.join(G0[["G_sp", "G_nq", "src"]])
+    # keep primary G wherever it existed; fill only the missing months
+    GA["G_sp_h"] = GA.G_sp.where(GA.G_sp.notna(), GA.G_sp_alt)
+    GA["G_nq_h"] = GA.G_nq.where(GA.G_nq.notna(), GA.G_nq_alt)
+    filled = GA[GA.G_nq.isna() & GA.G_nq_h.notna()]
+    GA.to_csv(f"{OUT}/posthoc_g_fill.csv")
+
+    def ph_plans(G):
+        out = [(f"{v}h", a, x, side, g) for v, a, x, side, g in plan(M, G) if v in ("P1", "P2", "P3", "P4", "C3")]
+        out += [("H1", a, x, "BUY", g) for v, a, x, side, g in plan(M, G) if v == "O2"]
+        return out
+    TN = run_nasdaq(ph_plans(GA.G_nq_h), m, d, nqc)
+    nq_months = nqc.index.to_period("M").nunique()
+    del m, d
+    TS = run_spx(ph_plans(GA.G_sp_h), b, spc)
+    sp_months = spc.index.to_period("M").nunique()
+    del b
+    T = pd.concat([TN, TS], ignore_index=True)
+    T["day"] = pd.to_datetime(T.day)
+    T["dir_hit"] = np.sign(T.c_out - T.c_in) == np.where(T.side == "BUY", 1, -1)
+    T.to_csv(f"{OUT}/posthoc_trades.csv", index=False)
+    T0 = pd.read_pickle(f"{OUT}/trades.pkl")
+    rows = []
+    for sym, mo in ((NQ, nq_months), (SP, sp_months)):
+        for v in ["H1", "O2", "C1", "P1", "P1h", "P2", "P2h", "P3", "P3h", "P4", "P4h", "C3", "C3h"]:
+            src = T if v in POSTHOC else T0
+            g = src[(src.market == sym) & (src.variant == v)]
+            row = {"market": NAMES[sym], "variant": v, **test_row(g, mo), "dir hit %": g.dir_hit.mean() * 100 if len(g) else np.nan}
+            for nm, msk in (("2011-21", g.day < pd.Timestamp("2022-01-01")), ("2022+", g.day >= pd.Timestamp("2022-01-01"))):
+                x = g[msk].R.to_numpy()
+                row.update({f"{nm} avg R": x.mean() if len(x) else np.nan, f"{nm} t": tstat(x)})
+            rows.append(row)
+    PH = pd.DataFrame(rows)
+    PH.to_csv(f"{OUT}/posthoc_tests.csv", index=False)
+    cols = ["trades", "trades/month", "win %", "avg win / avg loss", "avg R", "t", "design n", "design avg R", "design t",
+            "check avg R", "check t", "holdout avg R", "holdout t", "last3y avg R", "last3y t", "2011-21 avg R", "2022+ avg R",
+            "dir hit %", "survives"]
+    tabs = []
+    for sym in (NQ, SP):
+        x = PH[PH.market == NAMES[sym]].set_index("variant")[cols]
+        x.index = [f"{v} {({**VARIANTS, **POSTHOC})[v][1]}" for v in x.index]
+        x.index.name = "variant"
+        tabs += [f"### {NAMES[sym]}\n", ft(x, ".3f"), ""]
+    txt = ["\n## Post-hoc checks (added after seeing the first run; NOT candidates, not counted)\n",
+           "H1 = long the week after expiry (mirror of O2, chosen because O2 lost) - data-snooped, so its 'survives' flag means "
+           "nothing statistically. Rows with suffix h = P-variants re-run with G filled on half days (last live price that day); "
+           f"months filled for the Nasdaq: {len(filled)} ({', '.join(str(p) for p in filled.index)}). Primary rows shown next to them.\n",
+           *tabs]
+    with open(f"{OUT}/REPORT.md", "a") as f:
+        f.write("\n".join(txt) + "\n")
+    pd.set_option("display.width", 250); pd.set_option("display.max_columns", 40)
+    print(PH[["market", "variant", "trades", "avg R", "t", "design avg R", "design t", "check avg R", "holdout avg R",
+              "last3y avg R", "2011-21 avg R", "2022+ avg R", "survives"]].round(3).to_string())
+    print("filled months:", list(map(str, filled.index)))
+    print("DONE", flush=True)
+
+
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "prop":
+    if len(sys.argv) > 1 and sys.argv[1] == "posthoc":
+        posthoc()
+    elif len(sys.argv) > 1 and sys.argv[1] == "prop":
         R = pd.read_csv(f"{OUT}/tests.csv")
         s = R[(R.market == NQ) & R.survives & R.variant.isin(CANDS)]
         prop(list(s.variant))
