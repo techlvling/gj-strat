@@ -199,7 +199,7 @@ def build_market(sym: str, start: date, end: date, raw_dir: str, cache: str) -> 
     download(sym, dl_start, end, raw_dir)
     bid = load_side(sym, "BID", dl_start, end, raw_dir)
     ask = load_side(sym, "ASK", dl_start, end, raw_dir)
-    base, quote = sym[:3], sym[3:]
+    base, quote = (sym[:-3], sym[-3:]) if "IDX" in sym else (sym[:3], sym[3:])   # JPNIDX/JPY
     if quote == "USD":
         conv = 1.0
     elif base == "USD":

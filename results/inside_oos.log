@@ -1,0 +1,103 @@
+XAUUSD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+{'market': 'XAUUSD', 'TP1R trades': 380, 'TP1R win %': np.float64(47.89473684210526), 'TP1R avg R': np.float64(0.00612487930474047), 'TP1R t': np.float64(0.16988770457080207), 'TP1R years positive': '8/17', 'TP2R trades': 380, 'TP2R win %': np.float64(46.31578947368421), 'TP2R avg R': np.float64(0.01823680559355399), 'TP2R t': np.float64(0.4525608507511127), 'TP2R years positive': '9/17'}
+JPNIDXJPY: 11518 files, 0 downloaded, 11518 cached, 0 not on server
+USDJPY: 5759 files, 0 downloaded, 5759 cached, 0 not on server
+{'market': 'JPNIDXJPY', 'TP1R trades': 149, 'TP1R win %': np.float64(50.33557046979866), 'TP1R avg R': np.float64(0.01860507250831083), 'TP1R t': np.float64(0.41078582823056253), 'TP1R years positive': '6/14', 'TP2R trades': 149, 'TP2R win %': np.float64(48.99328859060403), 'TP2R avg R': np.float64(0.02148258318762039), 'TP2R t': np.float64(0.4397873652693894), 'TP2R years positive': '6/14'}
+USATECHIDXUSD: 11518 files, 0 downloaded, 11518 cached, 0 not on server
+{'market': 'USATECHIDXUSD', 'TP1R trades': 252, 'TP1R win %': np.float64(53.57142857142857), 'TP1R avg R': np.float64(-0.0111142643556083), 'TP1R t': np.float64(-0.24124661221436514), 'TP1R years positive': '7/15', 'TP2R trades': 252, 'TP2R win %': np.float64(51.19047619047619), 'TP2R avg R': np.float64(-0.016274092454223284), 'TP2R t': np.float64(-0.3158397446817138), 'TP2R years positive': '7/15'}
+AUDJPY: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDJPY: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'AUDJPY', 'TP1R trades': 245, 'TP1R win %': np.float64(49.795918367346935), 'TP1R avg R': np.float64(-0.0007930612244897892), 'TP1R t': np.float64(-0.021785836480420005), 'TP1R years positive': '10/17', 'TP2R trades': 245, 'TP2R win %': np.float64(48.57142857142857), 'TP2R avg R': np.float64(5.5918367346944397e-05), 'TP2R t': np.float64(0.0014572061984185474), 'TP2R years positive': '8/17'}
+CADJPY: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDJPY: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'CADJPY', 'TP1R trades': 329, 'TP1R win %': np.float64(42.857142857142854), 'TP1R avg R': np.float64(-0.05829452887537995), 'TP1R t': np.float64(-1.61756380095336), 'TP1R years positive': '7/17', 'TP2R trades': 329, 'TP2R win %': np.float64(41.94528875379939), 'TP2R avg R': np.float64(-0.059947112462006076), 'TP2R t': np.float64(-1.5623118801107296), 'TP2R years positive': '8/17'}
+CHFJPY: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDJPY: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'CHFJPY', 'TP1R trades': 326, 'TP1R win %': np.float64(39.263803680981596), 'TP1R avg R': np.float64(-0.10607638036809816), 'TP1R t': np.float64(-3.1591915636549035), 'TP1R years positive': '5/17', 'TP2R trades': 326, 'TP2R win %': np.float64(38.65030674846626), 'TP2R avg R': np.float64(-0.12087484662576688), 'TP2R t': np.float64(-3.5127688757280637), 'TP2R years positive': '3/17'}
+NZDJPY: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDJPY: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'NZDJPY', 'TP1R trades': 252, 'TP1R win %': np.float64(42.06349206349206), 'TP1R avg R': np.float64(-0.05839603174603175), 'TP1R t': np.float64(-1.5998174319729919), 'TP1R years positive': '7/17', 'TP2R trades': 252, 'TP2R win %': np.float64(41.66666666666667), 'TP2R avg R': np.float64(-0.06715357142857144), 'TP2R t': np.float64(-1.7677014094384744), 'TP2R years positive': '5/17'}
+USDCHF: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+{'market': 'USDCHF', 'TP1R trades': 401, 'TP1R win %': np.float64(49.87531172069826), 'TP1R avg R': np.float64(0.012367331670822945), 'TP1R t': np.float64(0.36572122041444566), 'TP1R years positive': '11/17', 'TP2R trades': 401, 'TP2R win %': np.float64(47.880299251870326), 'TP2R avg R': np.float64(0.007657605985037407), 'TP2R t': np.float64(0.20139075993874142), 'TP2R years positive': '11/17'}
+USDCAD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+{'market': 'USDCAD', 'TP1R trades': 359, 'TP1R win %': np.float64(45.40389972144847), 'TP1R avg R': np.float64(-0.03989498607242339), 'TP1R t': np.float64(-1.0646094285795809), 'TP1R years positive': '7/17', 'TP2R trades': 359, 'TP2R win %': np.float64(43.73259052924791), 'TP2R avg R': np.float64(-0.050610306406685235), 'TP2R t': np.float64(-1.2655217904220695), 'TP2R years positive': '7/17'}
+AUDUSD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+{'market': 'AUDUSD', 'TP1R trades': 272, 'TP1R win %': np.float64(51.470588235294116), 'TP1R avg R': np.float64(-0.00044154411764705674), 'TP1R t': np.float64(-0.012329638404469446), 'TP1R years positive': '8/17', 'TP2R trades': 272, 'TP2R win %': np.float64(50.73529411764706), 'TP2R avg R': np.float64(-0.004056985294117642), 'TP2R t': np.float64(-0.10768242603753463), 'TP2R years positive': '8/17'}
+NZDUSD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+{'market': 'NZDUSD', 'TP1R trades': 269, 'TP1R win %': np.float64(48.698884758364315), 'TP1R avg R': np.float64(-0.04909553903345725), 'TP1R t': np.float64(-1.2652885420511477), 'TP1R years positive': '7/17', 'TP2R trades': 269, 'TP2R win %': np.float64(47.95539033457249), 'TP2R avg R': np.float64(-0.060295910780669155), 'TP2R t': np.float64(-1.515495121948207), 'TP2R years positive': '7/17'}
+EURGBP: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+GBPUSD: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'EURGBP', 'TP1R trades': 403, 'TP1R win %': np.float64(48.13895781637717), 'TP1R avg R': np.float64(0.0015027295285359888), 'TP1R t': np.float64(0.04432357964175522), 'TP1R years positive': '8/17', 'TP2R trades': 403, 'TP2R win %': np.float64(46.15384615384615), 'TP2R avg R': np.float64(-0.021381637717121586), 'TP2R t': np.float64(-0.5980019124040246), 'TP2R years positive': '8/17'}
+EURCHF: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDCHF: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'EURCHF', 'TP1R trades': 431, 'TP1R win %': np.float64(40.13921113689095), 'TP1R avg R': np.float64(-0.12227679814385152), 'TP1R t': np.float64(-3.8621559576424063), 'TP1R years positive': '4/17', 'TP2R trades': 431, 'TP2R win %': np.float64(39.90719257540603), 'TP2R avg R': np.float64(-0.11058654292343388), 'TP2R t': np.float64(-3.206071763037377), 'TP2R years positive': '4/17'}
+EURAUD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+AUDUSD: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'EURAUD', 'TP1R trades': 263, 'TP1R win %': np.float64(45.627376425855516), 'TP1R avg R': np.float64(-0.05467984790874526), 'TP1R t': np.float64(-1.5426394275582338), 'TP1R years positive': '5/17', 'TP2R trades': 263, 'TP2R win %': np.float64(45.247148288973385), 'TP2R avg R': np.float64(-0.05177718631178707), 'TP2R t': np.float64(-1.3689223979806), 'TP2R years positive': '5/17'}
+EURCAD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDCAD: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'EURCAD', 'TP1R trades': 371, 'TP1R win %': np.float64(45.55256064690027), 'TP1R avg R': np.float64(-0.0660867924528302), 'TP1R t': np.float64(-1.8691082448939724), 'TP1R years positive': '7/17', 'TP2R trades': 371, 'TP2R win %': np.float64(44.474393530997304), 'TP2R avg R': np.float64(-0.06232291105121294), 'TP2R t': np.float64(-1.6052629121421147), 'TP2R years positive': '7/17'}
+EURNZD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+NZDUSD: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'EURNZD', 'TP1R trades': 296, 'TP1R win %': np.float64(44.5945945945946), 'TP1R avg R': np.float64(-0.056484797297297294), 'TP1R t': np.float64(-1.755639560572511), 'TP1R years positive': '5/17', 'TP2R trades': 296, 'TP2R win %': np.float64(44.25675675675676), 'TP2R avg R': np.float64(-0.05958581081081081), 'TP2R t': np.float64(-1.8029406769872027), 'TP2R years positive': '6/17'}
+GBPCHF: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDCHF: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'GBPCHF', 'TP1R trades': 413, 'TP1R win %': np.float64(46.00484261501211), 'TP1R avg R': np.float64(-0.016275060532687638), 'TP1R t': np.float64(-0.5003744218125136), 'TP1R years positive': '9/17', 'TP2R trades': 413, 'TP2R win %': np.float64(45.036319612590795), 'TP2R avg R': np.float64(0.0024794188861985557), 'TP2R t': np.float64(0.06722759798277973), 'TP2R years positive': '8/17'}
+GBPAUD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+AUDUSD: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'GBPAUD', 'TP1R trades': 307, 'TP1R win %': np.float64(47.88273615635179), 'TP1R avg R': np.float64(-0.019086319218241048), 'TP1R t': np.float64(-0.5660289694091223), 'TP1R years positive': '6/17', 'TP2R trades': 307, 'TP2R win %': np.float64(47.55700325732899), 'TP2R avg R': np.float64(-0.02695570032573289), 'TP2R t': np.float64(-0.7856653394023166), 'TP2R years positive': '6/17'}
+GBPCAD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDCAD: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'GBPCAD', 'TP1R trades': 388, 'TP1R win %': np.float64(46.649484536082475), 'TP1R avg R': np.float64(-0.05888865979381444), 'TP1R t': np.float64(-1.6991246323368006), 'TP1R years positive': '5/17', 'TP2R trades': 388, 'TP2R win %': np.float64(45.876288659793815), 'TP2R avg R': np.float64(-0.05742061855670104), 'TP2R t': np.float64(-1.5368645177487266), 'TP2R years positive': '5/17'}
+GBPNZD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+NZDUSD: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'GBPNZD', 'TP1R trades': 301, 'TP1R win %': np.float64(41.86046511627907), 'TP1R avg R': np.float64(-0.11978239202657809), 'TP1R t': np.float64(-3.5284971872672615), 'TP1R years positive': '2/17', 'TP2R trades': 301, 'TP2R win %': np.float64(41.19601328903654), 'TP2R avg R': np.float64(-0.1336202657807309), 'TP2R t': np.float64(-3.880616013054422), 'TP2R years positive': '2/17'}
+AUDCAD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDCAD: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'AUDCAD', 'TP1R trades': 300, 'TP1R win %': np.float64(43.666666666666664), 'TP1R avg R': np.float64(-0.05901766666666667), 'TP1R t': np.float64(-1.6793785840300008), 'TP1R years positive': '5/17', 'TP2R trades': 300, 'TP2R win %': np.float64(43.0), 'TP2R avg R': np.float64(-0.05429466666666668), 'TP2R t': np.float64(-1.4476257570706819), 'TP2R years positive': '7/17'}
+AUDCHF: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDCHF: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'AUDCHF', 'TP1R trades': 284, 'TP1R win %': np.float64(40.845070422535215), 'TP1R avg R': np.float64(-0.08305528169014084), 'TP1R t': np.float64(-2.421454571125757), 'TP1R years positive': '5/17', 'TP2R trades': 284, 'TP2R win %': np.float64(40.140845070422536), 'TP2R avg R': np.float64(-0.08319894366197184), 'TP2R t': np.float64(-2.299570632725621), 'TP2R years positive': '6/17'}
+AUDNZD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+NZDUSD: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'AUDNZD', 'TP1R trades': 277, 'TP1R win %': np.float64(41.15523465703971), 'TP1R avg R': np.float64(-0.09487509025270759), 'TP1R t': np.float64(-3.1294221300040648), 'TP1R years positive': '7/17', 'TP2R trades': 277, 'TP2R win %': np.float64(41.15523465703971), 'TP2R avg R': np.float64(-0.11145379061371842), 'TP2R t': np.float64(-3.8420956459155002), 'TP2R years positive': '7/17'}
+CADCHF: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDCHF: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'CADCHF', 'TP1R trades': 401, 'TP1R win %': np.float64(41.39650872817955), 'TP1R avg R': np.float64(-0.09964089775561098), 'TP1R t': np.float64(-2.988392843731141), 'TP1R years positive': '4/17', 'TP2R trades': 401, 'TP2R win %': np.float64(41.14713216957606), 'TP2R avg R': np.float64(-0.10178029925187033), 'TP2R t': np.float64(-2.915875136084446), 'TP2R years positive': '4/17'}
+NZDCAD: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDCAD: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'NZDCAD', 'TP1R trades': 324, 'TP1R win %': np.float64(34.25925925925926), 'TP1R avg R': np.float64(-0.17985154320987654), 'TP1R t': np.float64(-5.30064033124595), 'TP1R years positive': '2/17', 'TP2R trades': 324, 'TP2R win %': np.float64(33.33333333333333), 'TP2R avg R': np.float64(-0.1958929012345679), 'TP2R t': np.float64(-5.804075982850738), 'TP2R years positive': '1/17'}
+NZDCHF: 12250 files, 0 downloaded, 12250 cached, 0 not on server
+USDCHF: 6125 files, 0 downloaded, 6125 cached, 0 not on server
+{'market': 'NZDCHF', 'TP1R trades': 304, 'TP1R win %': np.float64(39.14473684210527), 'TP1R avg R': np.float64(-0.12255), 'TP1R t': np.float64(-3.6821798336319778), 'TP1R years positive': '4/17', 'TP2R trades': 304, 'TP2R win %': np.float64(39.14473684210527), 'TP2R avg R': np.float64(-0.12041578947368418), 'TP2R t': np.float64(-3.4899337820855423), 'TP2R years positive': '3/17'}
+- TP1R pooled: 8297 trades, win 44.7%, avg -0.057R, t -8.15, positive on 4/26 markets
+- TP2R pooled: 8297 trades, win 43.8%, avg -0.060R, t -8.02, positive on 5/26 markets 
+FAIL
+               TP1R trades  TP1R win %  TP1R avg R  TP1R t TP1R years positive  TP2R trades  TP2R win %  TP2R avg R  TP2R t TP2R years positive
+market                                                                                                                                         
+XAUUSD                 380      47.895       0.006   0.170                8/17          380      46.316       0.018   0.453                9/17
+JPNIDXJPY              149      50.336       0.019   0.411                6/14          149      48.993       0.021   0.440                6/14
+USATECHIDXUSD          252      53.571      -0.011  -0.241                7/15          252      51.190      -0.016  -0.316                7/15
+AUDJPY                 245      49.796      -0.001  -0.022               10/17          245      48.571       0.000   0.001                8/17
+CADJPY                 329      42.857      -0.058  -1.618                7/17          329      41.945      -0.060  -1.562                8/17
+CHFJPY                 326      39.264      -0.106  -3.159                5/17          326      38.650      -0.121  -3.513                3/17
+NZDJPY                 252      42.063      -0.058  -1.600                7/17          252      41.667      -0.067  -1.768                5/17
+USDCHF                 401      49.875       0.012   0.366               11/17          401      47.880       0.008   0.201               11/17
+USDCAD                 359      45.404      -0.040  -1.065                7/17          359      43.733      -0.051  -1.266                7/17
+AUDUSD                 272      51.471      -0.000  -0.012                8/17          272      50.735      -0.004  -0.108                8/17
+NZDUSD                 269      48.699      -0.049  -1.265                7/17          269      47.955      -0.060  -1.515                7/17
+EURGBP                 403      48.139       0.002   0.044                8/17          403      46.154      -0.021  -0.598                8/17
+EURCHF                 431      40.139      -0.122  -3.862                4/17          431      39.907      -0.111  -3.206                4/17
+EURAUD                 263      45.627      -0.055  -1.543                5/17          263      45.247      -0.052  -1.369                5/17
+EURCAD                 371      45.553      -0.066  -1.869                7/17          371      44.474      -0.062  -1.605                7/17
+EURNZD                 296      44.595      -0.056  -1.756                5/17          296      44.257      -0.060  -1.803                6/17
+GBPCHF                 413      46.005      -0.016  -0.500                9/17          413      45.036       0.002   0.067                8/17
+GBPAUD                 307      47.883      -0.019  -0.566                6/17          307      47.557      -0.027  -0.786                6/17
+GBPCAD                 388      46.649      -0.059  -1.699                5/17          388      45.876      -0.057  -1.537                5/17
+GBPNZD                 301      41.860      -0.120  -3.528                2/17          301      41.196      -0.134  -3.881                2/17
+AUDCAD                 300      43.667      -0.059  -1.679                5/17          300      43.000      -0.054  -1.448                7/17
+AUDCHF                 284      40.845      -0.083  -2.421                5/17          284      40.141      -0.083  -2.300                6/17
+AUDNZD                 277      41.155      -0.095  -3.129                7/17          277      41.155      -0.111  -3.842                7/17
+CADCHF                 401      41.397      -0.100  -2.988                4/17          401      41.147      -0.102  -2.916                4/17
+NZDCAD                 324      34.259      -0.180  -5.301                2/17          324      33.333      -0.196  -5.804                1/17
+NZDCHF                 304      39.145      -0.123  -3.682                4/17          304      39.145      -0.120  -3.490                3/17
