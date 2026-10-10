@@ -9,6 +9,7 @@ risk starts at 0.1%. All costs ($7/lot, swap +1%, 0.2 pip slippage). No withdraw
 
     python run_instant_lite.py
 """
+import argparse
 import os
 from datetime import date
 
@@ -23,12 +24,22 @@ from gjstrat.swap import SwapModel
 from run_backtest import fmt_table
 
 SIZE, OUT = 2_500, "results/instant_lite"
-DAILY, MAXDD, CAP_AT, CAP = 0.02, 0.04, 1.04, 1.0
+DAILY, MAXDD, CAP_AT, CAP, TRAIL = 0.02, 0.04, 1.04, 1.0, True
 MIXES = {f"gotobi {g:g}%": (0, g) for g in (0.25, 0.5, 0.75, 1.0)}
 MIXES.update({"vol-box 0.25% alone": (0.25, 0), "vol-box 0.1% + gotobi 0.5%": (0.1, 0.5),
               "vol-box 0.25% + gotobi 0.5%": (0.25, 0.5), "vol-box 0.1% + gotobi 0.75%": (0.1, 0.75)})
+ELITE = {f"gotobi {g:g}%": (0, g) for g in (1, 2, 3)}
+ELITE.update({f"vol-box {b:g}% + gotobi {g:g}%": (b, g) for b, g in ((0.25, 1), (0.25, 2), (0.25, 3), (0.5, 1), (0.5, 2))})
 
 if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--elite", action="store_true", help="Instant Elite: no daily limit, 10%% max DD, no risk cap")
+    ap.add_argument("--static", action="store_true", help="max DD static from the start balance (not trailing)")
+    a = ap.parse_args()
+    if a.elite:
+        DAILY, MAXDD, CAP_AT, MIXES = None, 0.10, np.inf, ELITE
+        OUT = "results/instant_elite" + ("_static" if a.static else "")
+    TRAIL = not a.static
     os.makedirs(OUT, exist_ok=True)
     m = build_market("USDJPY", date(2010, 1, 1), date(2026, 10, 7), "data/raw", "data/usdjpy_2010-01-01_2026-10-07.npz")
     sw = SwapModel.from_fred("rates", 1.0)
@@ -80,9 +91,11 @@ if __name__ == "__main__":
                     cur, day0 = ny[k], bal
                 bal += open_.pop(k) * R[k]
                 peak = max(peak, bal)
-                floor = min(max(floor, peak - MAXDD), 1.0)          # trails the high, locks at the start balance
-                if bal - day0 < -DAILY * day0 or bal <= floor:
-                    res = "daily" if bal - day0 < -DAILY * day0 else "max dd"
+                if TRAIL:
+                    floor = min(max(floor, peak - MAXDD), 1.0)      # trails the high, locks at the start balance
+                daily_hit = DAILY is not None and bal - day0 < -DAILY * day0
+                if daily_hit or bal <= floor:
+                    res = "daily" if daily_hit else "max dd"
                     when = (m.ts(bar[p]) - m.ts(T[s0].entry_i)).days
                     break
             out.append((res, when, bal - 1 if res == "alive" else np.nan))
@@ -91,14 +104,16 @@ if __name__ == "__main__":
         rows.append({"plan": name, "breached ≤3 months %": ((~alive) & (o.days <= 92)).mean() * 100,
                      "breached ≤6 months %": ((~alive) & (o.days <= 183)).mean() * 100,
                      "breached ≤12 months %": (~alive).mean() * 100,
-                     "of which daily 2% %": (o.res == "daily").mean() * 100,
+                     "of which daily limit %": (o.res == "daily").mean() * 100,
                      "survivors: median 12-month profit %": o.profit[alive].median() * 100,
                      "survivors: avg 12-month profit $": o.profit[alive].mean() * SIZE,
                      "expected 12-month payout $ (80%)": (o.profit.fillna(0).clip(lower=0) * SIZE * 0.8).mean()})
     tab = pd.DataFrame(rows).set_index("plan").sort_values("expected 12-month payout $ (80%)", ascending=False)
     tab.to_csv(f"{OUT}/summary.csv")
-    open(f"{OUT}/REPORT.md", "w").write("# Blueberry Funded Instant Lite $2,500 — vol-box + gotobi (USDJPY)\n\n"
-                                        "Rules as reported (verify): 2% daily, 4% trailing-lock max drawdown, 1% max risk after +4%. "
+    title = ("Instant Elite (no daily limit, 10% " + ("static" if a.static else "trailing-lock") + " max drawdown)"
+             if a.elite else "Instant Lite (2% daily, 4% trailing-lock max drawdown, 1% max risk after +4%)")
+    open(f"{OUT}/REPORT.md", "w").write(f"# Blueberry Funded {title}, $2,500 — vol-box + gotobi (USDJPY)\n\n"
+                                        "Rules as reported online (verify with Blueberry). "
                                         "Details and assumptions in run_instant_lite.py.\n\n" + fmt_table(tab, ".1f") + "\n")
     pd.set_option("display.width", 250)
     print(tab.round(1).to_string())

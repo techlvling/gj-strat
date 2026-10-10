@@ -1,4 +1,4 @@
-plan,breached ≤3 months %,breached ≤6 months %,breached ≤12 months %,of which daily 2% %,survivors: median 12-month profit %,survivors: avg 12-month profit $,expected 12-month payout $ (80%)
+plan,breached ≤3 months %,breached ≤6 months %,breached ≤12 months %,of which daily limit %,survivors: median 12-month profit %,survivors: avg 12-month profit $,expected 12-month payout $ (80%)
 vol-box 0.1% + gotobi 0.75%,10.070671378091872,21.51060070671378,31.007067137809187,0.0,13.864634709795265,355.1120767170943,196.2449234283015
 vol-box 0.1% + gotobi 0.5%,2.6943462897526502,10.556537102473499,20.58303886925795,0.0,9.51330536355377,249.00700960035016,158.6443180685257
 vol-box 0.25% + gotobi 0.5%,32.64134275618375,43.37455830388692,52.95936395759717,0.0,13.136001273973697,387.9949918922038,146.09403133827078

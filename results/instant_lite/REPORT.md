@@ -1,8 +1,8 @@
-# Blueberry Funded Instant Lite $2,500 — vol-box + gotobi (USDJPY)
+# Blueberry Funded Instant Lite (2% daily, 4% trailing-lock max drawdown, 1% max risk after +4%), $2,500 — vol-box + gotobi (USDJPY)
 
-Rules as reported (verify): 2% daily, 4% trailing-lock max drawdown, 1% max risk after +4%. Details and assumptions in run_instant_lite.py.
+Rules as reported online (verify with Blueberry). Details and assumptions in run_instant_lite.py.
 
-| plan | breached ≤3 months % | breached ≤6 months % | breached ≤12 months % | of which daily 2% % | survivors: median 12-month profit % | survivors: avg 12-month profit $ | expected 12-month payout $ (80%) |
+| plan | breached ≤3 months % | breached ≤6 months % | breached ≤12 months % | of which daily limit % | survivors: median 12-month profit % | survivors: avg 12-month profit $ | expected 12-month payout $ (80%) |
 |---|---|---|---|---|---|---|---|
 | vol-box 0.1% + gotobi 0.75% | 10.1 | 21.5 | 31.0 | 0.0 | 13.9 | 355.1 | 196.2 |
 | vol-box 0.1% + gotobi 0.5% | 2.7 | 10.6 | 20.6 | 0.0 | 9.5 | 249.0 | 158.6 |
