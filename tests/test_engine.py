@@ -575,3 +575,10 @@ def test_month_end_usd_bid_days_and_times():
         assert m.ts(s.start_i).strftime("%H:%M") <= "11:04" and m.ts(s.start_i).hour == 11
         assert m.ts(s.exit_by_i).strftime("%H:%M") == "12:00" and s.side == "BUY" and s.tp_dist is None
         assert s.sl_dist == 0.25 * d.loc[s.day, "atr20"]
+
+
+def test_flat_box_is_skipped():
+    m = flat_market()
+    m.vol[:] = 1.0                       # ticks but no movement: a zero-size box must not be traded
+    tr, c = run(m, Params(rr=9, sl_box_mult=1.0), [pd.Timestamp(DAY)])
+    assert tr == [] and c.skipped_dates and c.skipped_dates[0][1] == "flat range"

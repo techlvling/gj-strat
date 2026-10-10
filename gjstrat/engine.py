@@ -258,9 +258,13 @@ def run(m: Market, p: Params, days: list[pd.Timestamp] | None = None,
             c.skipped_incomplete += 1
             c.skipped_dates.append((day.date(), f"{bl_ - live} empty minutes in range"))
             continue
-        c.traded_days += 1
         hi = float(m.bh[rs:rs + bl_].max())
         lo = float(m.bl[rs:rs + bl_].min())
+        if hi <= lo:                                      # flat box (e.g. a holiday): nothing to trade
+            c.skipped_incomplete += 1
+            c.skipped_dates.append((day.date(), "flat range"))
+            continue
+        c.traded_days += 1
         range_pips = (hi - lo) / m.pip
         if p.min_box_rel is not None:
             window = recent_boxes[-p.box_lookback:]
