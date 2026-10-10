@@ -1,0 +1,108 @@
+USATECHIDXUSD: 3582 closes, 3 segments, 2409 trades, 10s
+JPNIDXJPY: 3192 closes, 5 segments, 1940 trades, 6s
+XAUUSD: 4164 closes, 1 segments, 2612 trades, 8s
+USA500IDXUSD: 3568 closes, 2 segments, 2307 trades, 1s
+           market variant  trades  trades/month   win %  avg R  design avg R  design t  check avg R  holdout avg R  last3y avg R  survives
+0   USATECHIDXUSD     MR1     399         2.254  53.133  0.043         0.077     1.417       -0.002          0.085         0.082     False
+1   USATECHIDXUSD     MR2     133         0.751  55.639  0.046         0.060     0.592       -0.008          0.136         0.111     False
+2   USATECHIDXUSD     MR3     234         1.322  55.128  0.033         0.031     0.381        0.026          0.049         0.038     False
+3   USATECHIDXUSD     MR4     254         1.435  57.480  0.133         0.201     2.008        0.097          0.090         0.091      True
+4   USATECHIDXUSD     MR5     106         0.599  69.811  0.132         0.171     1.273       -0.023          0.304         0.297     False
+5   USATECHIDXUSD     MR6      61         0.345  70.492  0.235         0.433     2.279        0.073          0.298         0.302      True
+6   USATECHIDXUSD     MR7     102         0.576  73.529  0.197         0.239     1.670        0.008          0.410         0.362     False
+7   USATECHIDXUSD     MR8     161         0.910  69.565  0.135         0.195     1.957       -0.001          0.282         0.277     False
+8   USATECHIDXUSD     MR9     394         2.226  51.523  0.026         0.011     0.161        0.029          0.045         0.069     False
+9   USATECHIDXUSD    MR10      74         0.418  54.054  0.056         0.204     1.257       -0.080         -0.097        -0.013     False
+10  USATECHIDXUSD    MR11     491         2.774  43.381 -0.032        -0.055    -1.524       -0.012         -0.037        -0.040     False
+11   USA500IDXUSD     MR1     375         2.143  51.733  0.003         0.038     0.764       -0.091          0.146         0.137     False
+12   USA500IDXUSD     MR2     116         0.663  51.724 -0.038         0.009     0.092       -0.098          0.028         0.028     False
+13   USA500IDXUSD     MR3     218         1.246  53.211 -0.004        -0.011    -0.142       -0.059          0.112         0.087     False
+14   USA500IDXUSD     MR4     237         1.354  54.008  0.059         0.122     1.390       -0.036          0.143         0.166     False
+15   USA500IDXUSD     MR5     106         0.606  69.811  0.137         0.133     1.039        0.048          0.264         0.224     False
+16   USA500IDXUSD     MR6      60         0.343  75.000  0.264         0.251     1.377        0.142          0.475         0.475     False
+17   USA500IDXUSD     MR7     100         0.571  69.000  0.130         0.145     1.050        0.012          0.272         0.229     False
+18   USA500IDXUSD     MR8     162         0.926  67.901  0.100         0.072     0.709        0.041          0.250         0.216     False
+19   USA500IDXUSD     MR9     375         2.143  50.667  0.031         0.020     0.291        0.010          0.118         0.140     False
+20   USA500IDXUSD    MR10      73         0.417  50.685  0.151         0.224     1.122       -0.018          0.372         0.443     False
+21   USA500IDXUSD    MR11     485         2.771  43.505 -0.033        -0.033    -0.793       -0.020         -0.063        -0.076     False
+22      JPNIDXJPY     MR1     334         1.965  54.192  0.049         0.082     1.137        0.017          0.080         0.082     False
+23      JPNIDXJPY     MR2      88         0.518  59.091  0.147         0.335     1.381        0.025          0.225         0.225     False
+24      JPNIDXJPY     MR3     207         1.218  55.072  0.061         0.038     0.321        0.052          0.109         0.117     False
+25      JPNIDXJPY     MR4     220         1.294  53.182  0.086         0.064     0.513        0.100          0.087         0.104     False
+26      JPNIDXJPY     MR5      82         0.482  64.634 -0.026        -0.051    -0.284       -0.164          0.234         0.240     False
+27      JPNIDXJPY     MR6      43         0.253  69.767  0.086         0.106     0.477        0.030          0.210         0.263     False
+28      JPNIDXJPY     MR7      77         0.453  62.338 -0.088        -0.028    -0.143       -0.312          0.239         0.253     False
+29      JPNIDXJPY     MR8     146         0.859  58.219 -0.092        -0.128    -1.195       -0.146          0.094         0.108     False
+30      JPNIDXJPY     MR9     327         1.924  53.823  0.041         0.037     0.456        0.024          0.084         0.055     False
+31      JPNIDXJPY    MR10      35         0.206  51.429  0.191        -0.059    -0.244        0.465          0.749         0.749     False
+32      JPNIDXJPY    MR11     381         2.241  42.257 -0.084        -0.135    -2.830       -0.075         -0.032        -0.021     False
+33         XAUUSD     MR1     468         2.317  53.846 -0.000        -0.018    -0.656       -0.011          0.077         0.063     False
+34         XAUUSD     MR2     115         0.569  49.565 -0.037        -0.022    -0.321       -0.100          0.079         0.058     False
+35         XAUUSD     MR3     222         1.099  54.054  0.000         0.001     0.019       -0.034          0.082         0.082     False
+36         XAUUSD     MR4     321         1.589  49.844  0.028        -0.019    -0.321       -0.010          0.238         0.199     False
+37         XAUUSD     MR5      92         0.455  64.130  0.033         0.029     0.244       -0.062          0.186         0.213     False
+38         XAUUSD     MR6      48         0.238  64.583  0.086        -0.138    -0.880        0.113          0.339         0.331     False
+39         XAUUSD     MR7      88         0.436  63.636  0.031         0.037     0.296       -0.083          0.203         0.232     False
+40         XAUUSD     MR8     184         0.911  61.957 -0.007        -0.025    -0.362       -0.037          0.125         0.152     False
+41         XAUUSD     MR9     438         2.168  52.055  0.007        -0.025    -0.501       -0.025          0.156         0.208     False
+42         XAUUSD    MR10     119         0.589  51.261  0.003        -0.035    -0.345        0.048          0.011         0.007     False
+43         XAUUSD    MR11     517         2.559  46.035 -0.067        -0.043    -1.635       -0.066         -0.119        -0.125     False
+         trades  avg R  month t (all)  design n  design avg R  design month t  check n  check avg R  check month t  holdout n  holdout avg R  holdout month t  last3y n  last3y avg R  last3y month t  indices avg R > 0  pooled passes bar
+variant                                                                                                                                                                                                                                    
+MR1        1108  0.031          1.521       373         0.064           1.690      509       -0.025         -0.830        226          0.104            2.608       242         0.100           2.638                  3              False
+MR2         337  0.044          1.077        99         0.094           1.256      160       -0.030         -0.487         78          0.130            1.733        79         0.120           1.597                  2              False
+MR3         659  0.029          1.163       166         0.018           0.412      337        0.008          0.204        156          0.088            1.871       163         0.079           1.715                  2              False
+MR4         711  0.094          2.155       250         0.135           1.746      323        0.056          0.946        138          0.106            0.986       149         0.119           1.190                  3              False
+MR5         294  0.090          1.779        86         0.107           1.239      124       -0.044         -0.549         84          0.270            3.086        89         0.255           3.024                  2              False
+MR6         164  0.207          2.625        48         0.288           1.935       79        0.085          0.699         37          0.361            2.831        39         0.368           3.036                  3              False
+MR7         279  0.094          1.593        83         0.145           1.528      116       -0.093         -0.978         80          0.313            2.886        84         0.283           2.645                  2              False
+MR8         469  0.052          1.301       172         0.054           0.810      196       -0.034         -0.533        101          0.216            2.863       106         0.206           2.812                  2              False
+MR9        1096  0.032          1.131       399         0.022           0.436      498        0.021          0.541        199          0.081            1.142       218         0.087           1.289                  3              False
+MR10        182  0.120          1.258        87         0.148           1.081       66        0.023          0.147         29          0.259            0.969        31         0.316           1.219                  3              False
+MR11       1357 -0.047         -2.629       467        -0.067          -2.378      611       -0.033         -1.098        279         -0.045           -1.341       308        -0.047          -1.534                  0              False
+         indices worst day % (MTM)        date  indices worst day % (realised)       date   indices days < -1% (MTM)  worst single index trade R  gold worst day % (MTM)   gold date
+variant                                                                                                                                                                             
+MR1                          -1.07  2020-02-28                           -1.07  2020-02-28                         9                       -1.34                   -0.51  2011-05-05
+MR2                          -1.13  2020-03-12                           -1.13  2020-03-12                         5                       -1.29                   -0.51  2021-06-17
+MR3                          -1.07  2020-02-28                           -1.07  2020-02-28                         6                       -1.29                   -0.50  2020-02-04
+MR4                          -1.10  2021-11-26                           -1.04  2012-11-13                         2                       -1.18                   -0.87  2025-10-21
+MR5                          -1.10  2018-02-05                           -1.08  2018-03-23                         1                       -1.16                   -0.54  2024-11-11
+MR6                          -0.96  2021-10-04                           -1.09  2018-03-23                         0                       -1.16                   -0.50  2026-03-19
+MR7                          -1.15  2020-02-24                           -1.08  2018-03-23                         2                       -1.16                   -0.54  2024-11-11
+MR8                          -1.10  2018-02-05                           -1.08  2018-03-23                         1                       -1.18                   -0.54  2024-11-11
+MR9                          -1.14  2012-07-23                           -1.14  2012-07-23                         7                       -2.20                   -0.52  2023-09-28
+MR10                         -0.89  2019-05-06                           -1.02  2022-01-10                         0                       -1.34                   -0.78  2024-11-11
+MR11                         -0.99  2025-10-06                           -0.99  2025-10-06                         0                       -1.99                   -0.51  2019-06-20
+survivors: Nasdaq 100 MR4, Nasdaq 100 MR6
+M-3 EURUSD 189 0.118
+M-3 GBPUSD 189 0.067
+M-3 USDCHF 189 0.076
+M-3 AUDUSD 189 0.017
+M-3 NZDUSD 189 -0.015
+prop normal risk starts 2011-2025
+prop normal risk starts 2018-2025
+prop boost x1.5 starts 2011-2025
+prop boost x1.5 starts 2018-2025
+                                risk rule            window  pass ≤1 month %  pass ≤3 months %  pass ≤6 months %  fail ≤6 months %  pass eventually %  median months to pass  months per funded account  max DD %
+mix                                                                                                                                                                                                              
+basket                        normal risk  starts 2011-2025              7.8              28.0              44.4              31.1               59.1                    3.3                        7.3      26.4
+basket + Nasdaq 100 MR4 0.5%  normal risk  starts 2011-2025              7.6              27.5              45.3              29.9               60.5                    3.5                        7.1      26.6
+basket + Nasdaq 100 MR6 0.5%  normal risk  starts 2011-2025              7.8              28.2              45.0              31.2               59.9                    3.3                        7.2      26.1
+basket + Nasdaq 100 MR4 1%    normal risk  starts 2011-2025              7.6              29.6              47.8              29.7               61.4                    3.2                        6.7      26.7
+basket + Nasdaq 100 MR6 1%    normal risk  starts 2011-2025              7.8              28.8              45.6              30.6               60.5                    3.3                        7.1      26.0
+basket                        normal risk  starts 2018-2025              6.9              32.9              58.1              19.4               74.0                    3.6                        5.8      24.8
+basket + Nasdaq 100 MR4 0.5%  normal risk  starts 2018-2025              6.6              32.1              58.7              18.6               74.6                    3.7                        5.8      23.5
+basket + Nasdaq 100 MR6 0.5%  normal risk  starts 2018-2025              6.9              32.8              57.9              19.4               73.9                    3.6                        5.8      24.5
+basket + Nasdaq 100 MR4 1%    normal risk  starts 2018-2025              6.5              32.6              59.4              19.4               73.2                    3.5                        5.7      22.3
+basket + Nasdaq 100 MR6 1%    normal risk  starts 2018-2025              7.0              33.3              58.1              19.2               74.4                    3.5                        5.8      24.2
+basket                         boost x1.5  starts 2011-2025             12.2              31.3              43.4              50.9               46.2                    2.0                        4.9      26.4
+basket + Nasdaq 100 MR4 0.5%   boost x1.5  starts 2011-2025             11.9              31.6              44.3              50.6               46.5                    2.0                        4.7      26.6
+basket + Nasdaq 100 MR6 0.5%   boost x1.5  starts 2011-2025             12.1              31.2              43.0              51.3               45.5                    1.9                        4.9      26.1
+basket + Nasdaq 100 MR4 1%     boost x1.5  starts 2011-2025             12.8              32.3              45.7              49.2               47.8                    1.9                        4.5      26.7
+basket + Nasdaq 100 MR6 1%     boost x1.5  starts 2011-2025             12.3              31.5              42.6              51.4               44.8                    1.9                        5.0      26.0
+basket                         boost x1.5  starts 2018-2025             11.9              34.5              51.9              42.7               55.2                    2.3                        4.3      24.8
+basket + Nasdaq 100 MR4 0.5%   boost x1.5  starts 2018-2025             11.3              34.8              52.8              42.4               54.7                    2.3                        4.2      23.5
+basket + Nasdaq 100 MR6 0.5%   boost x1.5  starts 2018-2025             11.8              34.5              51.9              42.6               54.5                    2.2                        4.3      24.5
+basket + Nasdaq 100 MR4 1%     boost x1.5  starts 2018-2025             12.9              35.8              54.7              40.0               57.0                    2.2                        4.0      22.3
+basket + Nasdaq 100 MR6 1%     boost x1.5  starts 2018-2025             12.0              34.4              50.4              43.4               52.6                    2.1                        4.6      24.2
+DONE
