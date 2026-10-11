@@ -28,6 +28,7 @@ class Params:
     swing_n: int = 5
     lookback: int = 60
     atr1_n: int = 20
+    atr1_incl_bar: bool = True      # ATR(20, 1m) for body tests includes the tested bar (False: prior 20)
     atr15_n: int = 14
     body_k: float = 1.5
     drive_in_bars: int = 10
@@ -151,6 +152,8 @@ def compute_features(day: Day, P: Params = Params()) -> Day:
     atr15 = sma(true_range(day.h15, day.l15, day.c15), P.atr15_n)
     day.atr15_at = atr15_at_close(tod, day.s15, atr15)
     day.atr20 = sma(true_range(h, l, c), P.atr1_n)        # includes the bar itself (closed)
+    if not P.atr1_incl_bar:
+        day.atr20 = np.r_[np.nan, day.atr20[:-1]]
     day.i0 = int(np.searchsorted(tod, RTH_OPEN))
     day.i_end = int(np.searchsorted(tod, ENTRY_END))
     day.e_end = int(np.searchsorted(tod, EOD))
@@ -229,7 +232,9 @@ class DayLimits:
 
 
 # --------------------------------------------------------------------------- the day loop
-def run_day(day: Day, v: Variant, bias: Bias | None, P: Params = Params()) -> tuple[list[dict], Counter]:
+def run_day(day: Day, v: Variant, bias: Bias | None, P: Params = Params(),
+            trace: list | None = None) -> tuple[list[dict], Counter]:
+    """trace: optional list; each setup's end is appended as (event, side, extreme bar, end bar)."""
     cnt: Counter = Counter()
     trades: list[dict] = []
     if v.mode == "strategy":
@@ -269,6 +274,8 @@ def run_day(day: Day, v: Variant, bias: Bias | None, P: Params = Params()) -> tu
         ok = day.di_ok[sd][s]
         if ok and drive_out(day.o, day.c, day.atr20, t, sd, day.di_gap[sd][s], P.body_k):
             cnt["signals"] += 1
+            if trace is not None:
+                trace.append(("signal", sd, s, t))
             setup = None
             tr = take_signal(day, v, kind, t, sd, s, P, cnt)
             if tr is None:
@@ -280,10 +287,14 @@ def run_day(day: Day, v: Variant, bias: Bias | None, P: Params = Params()) -> tu
             continue
         if t - s >= P.drive_out_bars:
             cnt["died_no_drive_out_5bars" if ok else "died_no_drive_in"] += 1
+            if trace is not None:
+                trace.append(("died_no_drive_out" if ok else "died_no_drive_in", sd, s, t))
             setup = None
         t += 1
     if setup is not None:
         cnt["died_entry_window_end"] += 1
+        if trace is not None:
+            trace.append(("died_window_end", setup[0], setup[1], t))
     if lim.done in ("TP", "2SL"):
         cnt[f"day_done_{lim.done}"] += 1
     return trades, cnt

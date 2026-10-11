@@ -73,3 +73,16 @@ orders placed 00:30 UTC, expire 05:30 UTC. Only Mon–Fri IST dates are trading 
 * Days with any tick-less minute in the 05:00–05:59 IST range window are skipped and listed.
 * In-sample / out-of-sample split: first 60% / last 40% of tradable days. Combos are ranked by
   in-sample t-stat of mean R only.
+
+## Nasdaq 100 overnight volume-profile strategy (`nqvp/`)
+
+Dukascopy USATECH.IDX/USD 1m bid+ask, 2020 to latest, New York clock. Overnight (18:00-09:29) volume
+profile -> POC / VAH / VAL; 15m rejection (B1) or acceptance (B2) bias 09:30/09:45-11:00; 1m sweep of
+the obvious swing low/high with a gap + displacement drive-in and drive-out; 16-variant sweep, 60/40
+in-sample / out-of-sample, no-filter and random-direction benchmarks, next-open robustness.
+
+```
+python -m pytest -q tests/test_nqvp.py    # 33 rule tests
+python run_nqvp.py                        # parquet cache per year -> results/nq_vp/REPORT.md
+python run_nqvp_funnel.py                 # where the 1m setups die -> results/nq_vp/funnel.md
+```
