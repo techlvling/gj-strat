@@ -1,0 +1,256 @@
+variant,ccy,T,why
+P3,AUD,2010-01-12,no ATR20 (warm-up)
+P3,AUD,2010-01-19,no ATR20 (warm-up)
+P3,AUD,2010-03-09,no ATR20 (warm-up)
+P7,AUD,2010-01-05,no ATR20 (warm-up)
+P7,AUD,2010-01-19,no ATR20 (warm-up)
+P7,AUD,2010-02-09,no ATR20 (warm-up)
+P7,AUD,2010-02-23,no ATR20 (warm-up)
+P7,AUD,2010-03-02,no ATR20 (warm-up)
+P7,AUD,2026-09-29,exit after data end
+P7,AUD,2026-10-06,no entry minute
+P8,AUD,2010-01-05,no ATR20 (warm-up)
+P8,AUD,2010-01-19,no ATR20 (warm-up)
+P8,AUD,2010-02-09,no ATR20 (warm-up)
+P8,AUD,2010-02-23,no ATR20 (warm-up)
+P8,AUD,2010-03-02,no ATR20 (warm-up)
+P8,AUD,2026-09-29,exit after data end
+P8,AUD,2026-10-06,no entry minute
+P1,CAD,2010-01-12,no ATR20 (warm-up)
+P1,CAD,2010-03-09,no ATR20 (warm-up)
+P3,CAD,2010-01-12,no ATR20 (warm-up)
+P3,CAD,2010-03-09,no ATR20 (warm-up)
+P5,CAD,2010-01-05,no ATR20 (warm-up)
+P5,CAD,2010-01-12,no ATR20 (warm-up)
+P5,CAD,2010-01-19,no ATR20 (warm-up)
+P5,CAD,2010-01-26,no ATR20 (warm-up)
+P5,CAD,2010-02-02,no ATR20 (warm-up)
+P5,CAD,2010-02-09,no ATR20 (warm-up)
+P5,CAD,2010-02-16,no ATR20 (warm-up)
+P5,CAD,2010-02-23,no ATR20 (warm-up)
+P5,CAD,2010-03-02,no ATR20 (warm-up)
+P5,CAD,2010-03-09,no ATR20 (warm-up)
+P6,CAD,2010-01-05,no ATR20 (warm-up)
+P6,CAD,2010-02-02,no ATR20 (warm-up)
+P6,CAD,2010-03-02,no ATR20 (warm-up)
+P7,CAD,2010-01-05,no ATR20 (warm-up)
+P7,CAD,2010-01-19,no ATR20 (warm-up)
+P7,CAD,2010-01-26,no ATR20 (warm-up)
+P7,CAD,2010-02-02,no ATR20 (warm-up)
+P7,CAD,2010-02-16,no ATR20 (warm-up)
+P7,CAD,2010-02-23,no ATR20 (warm-up)
+P7,CAD,2010-03-09,no ATR20 (warm-up)
+P7,CAD,2026-09-29,exit after data end
+P8,CAD,2010-01-05,no ATR20 (warm-up)
+P8,CAD,2010-01-19,no ATR20 (warm-up)
+P8,CAD,2010-01-26,no ATR20 (warm-up)
+P8,CAD,2010-02-02,no ATR20 (warm-up)
+P8,CAD,2010-02-16,no ATR20 (warm-up)
+P8,CAD,2010-02-23,no ATR20 (warm-up)
+P8,CAD,2010-03-09,no ATR20 (warm-up)
+P8,CAD,2026-09-29,exit after data end
+P1,EUR,2010-01-05,no ATR20 (warm-up)
+P1,EUR,2010-01-19,no ATR20 (warm-up)
+P1,EUR,2010-01-26,no ATR20 (warm-up)
+P1,EUR,2010-02-02,no ATR20 (warm-up)
+P1,EUR,2010-02-09,no ATR20 (warm-up)
+P1,EUR,2010-02-16,no ATR20 (warm-up)
+P1,EUR,2010-02-23,no ATR20 (warm-up)
+P1,EUR,2010-03-02,no ATR20 (warm-up)
+P1,EUR,2010-03-09,no ATR20 (warm-up)
+P1,EUR,2026-10-06,no entry minute
+P2,EUR,2010-01-05,no ATR20 (warm-up)
+P2,EUR,2010-01-26,no ATR20 (warm-up)
+P2,EUR,2010-02-02,no ATR20 (warm-up)
+P2,EUR,2010-02-09,no ATR20 (warm-up)
+P2,EUR,2010-02-16,no ATR20 (warm-up)
+P2,EUR,2010-02-23,no ATR20 (warm-up)
+P2,EUR,2010-03-02,no ATR20 (warm-up)
+P2,EUR,2010-03-09,no ATR20 (warm-up)
+P2,EUR,2026-10-06,no entry minute
+P3,EUR,2010-01-05,no ATR20 (warm-up)
+P3,EUR,2010-01-12,no ATR20 (warm-up)
+P3,EUR,2010-01-19,no ATR20 (warm-up)
+P3,EUR,2010-01-26,no ATR20 (warm-up)
+P3,EUR,2010-02-02,no ATR20 (warm-up)
+P3,EUR,2010-02-09,no ATR20 (warm-up)
+P3,EUR,2010-02-16,no ATR20 (warm-up)
+P3,EUR,2010-02-23,no ATR20 (warm-up)
+P3,EUR,2010-03-02,no ATR20 (warm-up)
+P3,EUR,2010-03-09,no ATR20 (warm-up)
+P3,EUR,2026-09-08,exit after data end
+P3,EUR,2026-09-22,exit after data end
+P3,EUR,2026-09-29,exit after data end
+P3,EUR,2026-10-06,no entry minute
+P4,EUR,2010-01-19,no ATR20 (warm-up)
+P4,EUR,2010-01-26,no ATR20 (warm-up)
+P4,EUR,2010-02-02,no ATR20 (warm-up)
+P4,EUR,2010-02-09,no ATR20 (warm-up)
+P4,EUR,2010-02-16,no ATR20 (warm-up)
+P5,EUR,2010-01-05,no ATR20 (warm-up)
+P5,EUR,2010-01-19,no ATR20 (warm-up)
+P5,EUR,2010-01-26,no ATR20 (warm-up)
+P5,EUR,2010-02-02,no ATR20 (warm-up)
+P5,EUR,2010-02-09,no ATR20 (warm-up)
+P5,EUR,2010-02-16,no ATR20 (warm-up)
+P5,EUR,2010-02-23,no ATR20 (warm-up)
+P5,EUR,2010-03-02,no ATR20 (warm-up)
+P5,EUR,2010-03-09,no ATR20 (warm-up)
+P5,EUR,2026-09-29,exit after data end
+P5,EUR,2026-10-06,no entry minute
+P6,EUR,2010-01-05,no ATR20 (warm-up)
+P6,EUR,2010-02-02,no ATR20 (warm-up)
+P6,EUR,2010-03-02,no ATR20 (warm-up)
+P6,EUR,2026-09-29,exit after data end
+P7,EUR,2010-01-12,no ATR20 (warm-up)
+P7,EUR,2010-01-19,no ATR20 (warm-up)
+P7,EUR,2010-02-02,no ATR20 (warm-up)
+P7,EUR,2010-02-16,no ATR20 (warm-up)
+P7,EUR,2010-02-23,no ATR20 (warm-up)
+P7,EUR,2026-09-29,exit after data end
+P7,EUR,2026-10-06,no entry minute
+P8,EUR,2010-01-12,no ATR20 (warm-up)
+P8,EUR,2010-01-19,no ATR20 (warm-up)
+P8,EUR,2010-02-02,no ATR20 (warm-up)
+P8,EUR,2010-02-16,no ATR20 (warm-up)
+P8,EUR,2010-02-23,no ATR20 (warm-up)
+P8,EUR,2026-09-29,exit after data end
+P8,EUR,2026-10-06,no entry minute
+P1,CHF,2010-01-12,no ATR20 (warm-up)
+P1,CHF,2010-01-19,no ATR20 (warm-up)
+P1,CHF,2026-09-29,exit after data end
+P1,CHF,2026-10-06,no entry minute
+P3,CHF,2010-02-23,no ATR20 (warm-up)
+P3,CHF,2026-09-22,exit after data end
+P3,CHF,2026-09-29,exit after data end
+P3,CHF,2026-10-06,no entry minute
+P4,CHF,2010-01-19,no ATR20 (warm-up)
+P4,CHF,2026-09-08,exit after data end
+P4,CHF,2026-09-22,exit after data end
+P4,CHF,2026-09-29,exit after data end
+P5,CHF,2026-09-29,exit after data end
+P5,CHF,2026-10-06,no entry minute
+P6,CHF,2026-09-29,exit after data end
+P7,CHF,2010-01-05,no ATR20 (warm-up)
+P7,CHF,2010-01-12,no ATR20 (warm-up)
+P7,CHF,2010-02-02,no ATR20 (warm-up)
+P7,CHF,2026-09-29,exit after data end
+P7,CHF,2026-10-06,no entry minute
+P8,CHF,2010-01-05,no ATR20 (warm-up)
+P8,CHF,2010-01-12,no ATR20 (warm-up)
+P8,CHF,2010-02-02,no ATR20 (warm-up)
+P8,CHF,2026-09-29,exit after data end
+P8,CHF,2026-10-06,no entry minute
+P1,GBP,2010-02-09,no ATR20 (warm-up)
+P1,GBP,2010-02-16,no ATR20 (warm-up)
+P1,GBP,2010-02-23,no ATR20 (warm-up)
+P1,GBP,2010-03-02,no ATR20 (warm-up)
+P1,GBP,2026-09-22,exit after data end
+P1,GBP,2026-09-29,exit after data end
+P1,GBP,2026-10-06,no entry minute
+P2,GBP,2010-02-09,no ATR20 (warm-up)
+P2,GBP,2010-02-16,no ATR20 (warm-up)
+P2,GBP,2010-02-23,no ATR20 (warm-up)
+P2,GBP,2010-03-02,no ATR20 (warm-up)
+P2,GBP,2026-09-22,exit after data end
+P2,GBP,2026-09-29,exit after data end
+P2,GBP,2026-10-06,no entry minute
+P3,GBP,2010-02-09,no ATR20 (warm-up)
+P3,GBP,2010-02-16,no ATR20 (warm-up)
+P3,GBP,2010-02-23,no ATR20 (warm-up)
+P3,GBP,2010-03-02,no ATR20 (warm-up)
+P3,GBP,2026-09-22,exit after data end
+P3,GBP,2026-09-29,exit after data end
+P3,GBP,2026-10-06,no entry minute
+P4,GBP,2010-02-09,no ATR20 (warm-up)
+P4,GBP,2010-02-16,no ATR20 (warm-up)
+P4,GBP,2026-09-22,exit after data end
+P4,GBP,2026-09-29,exit after data end
+P5,GBP,2010-01-05,no ATR20 (warm-up)
+P5,GBP,2010-01-12,no ATR20 (warm-up)
+P5,GBP,2010-01-26,no ATR20 (warm-up)
+P5,GBP,2010-02-02,no ATR20 (warm-up)
+P5,GBP,2010-02-09,no ATR20 (warm-up)
+P5,GBP,2010-02-16,no ATR20 (warm-up)
+P5,GBP,2010-02-23,no ATR20 (warm-up)
+P5,GBP,2010-03-02,no ATR20 (warm-up)
+P5,GBP,2010-03-09,no ATR20 (warm-up)
+P5,GBP,2026-09-29,exit after data end
+P5,GBP,2026-10-06,no entry minute
+P6,GBP,2010-01-05,no ATR20 (warm-up)
+P6,GBP,2010-02-02,no ATR20 (warm-up)
+P6,GBP,2010-03-02,no ATR20 (warm-up)
+P6,GBP,2026-09-29,exit after data end
+P7,GBP,2010-01-05,no ATR20 (warm-up)
+P7,GBP,2010-01-12,no ATR20 (warm-up)
+P7,GBP,2010-01-19,no ATR20 (warm-up)
+P7,GBP,2010-01-26,no ATR20 (warm-up)
+P7,GBP,2010-02-09,no ATR20 (warm-up)
+P7,GBP,2010-03-02,no ATR20 (warm-up)
+P7,GBP,2010-03-09,no ATR20 (warm-up)
+P8,GBP,2010-01-05,no ATR20 (warm-up)
+P8,GBP,2010-01-12,no ATR20 (warm-up)
+P8,GBP,2010-01-19,no ATR20 (warm-up)
+P8,GBP,2010-01-26,no ATR20 (warm-up)
+P8,GBP,2010-02-09,no ATR20 (warm-up)
+P8,GBP,2010-03-02,no ATR20 (warm-up)
+P8,GBP,2010-03-09,no ATR20 (warm-up)
+P3,JPY,2010-01-05,no ATR20 (warm-up)
+P3,JPY,2010-01-12,no ATR20 (warm-up)
+P3,JPY,2010-01-19,no ATR20 (warm-up)
+P3,JPY,2026-09-15,exit after data end
+P3,JPY,2026-09-22,exit after data end
+P3,JPY,2026-10-06,no entry minute
+P5,JPY,2010-01-12,no ATR20 (warm-up)
+P5,JPY,2010-01-19,no ATR20 (warm-up)
+P5,JPY,2010-02-09,no ATR20 (warm-up)
+P5,JPY,2010-03-02,no ATR20 (warm-up)
+P5,JPY,2010-03-09,no ATR20 (warm-up)
+P5,JPY,2026-09-29,exit after data end
+P5,JPY,2026-10-06,no entry minute
+P6,JPY,2010-03-02,no ATR20 (warm-up)
+P6,JPY,2026-09-29,exit after data end
+P7,JPY,2010-01-12,no ATR20 (warm-up)
+P7,JPY,2010-01-26,no ATR20 (warm-up)
+P7,JPY,2010-02-02,no ATR20 (warm-up)
+P7,JPY,2010-02-09,no ATR20 (warm-up)
+P7,JPY,2010-02-16,no ATR20 (warm-up)
+P7,JPY,2010-02-23,no ATR20 (warm-up)
+P7,JPY,2010-03-02,no ATR20 (warm-up)
+P7,JPY,2010-03-09,no ATR20 (warm-up)
+P7,JPY,2026-10-06,no entry minute
+P8,JPY,2010-01-12,no ATR20 (warm-up)
+P8,JPY,2010-01-26,no ATR20 (warm-up)
+P8,JPY,2010-02-02,no ATR20 (warm-up)
+P8,JPY,2010-02-09,no ATR20 (warm-up)
+P8,JPY,2010-02-16,no ATR20 (warm-up)
+P8,JPY,2010-02-23,no ATR20 (warm-up)
+P8,JPY,2010-03-02,no ATR20 (warm-up)
+P8,JPY,2010-03-09,no ATR20 (warm-up)
+P8,JPY,2026-10-06,no entry minute
+P1,GOLD,2026-09-22,exit after data end
+P3,GOLD,2026-09-22,exit after data end
+P4,GOLD,2026-09-08,exit after data end
+P4,GOLD,2026-09-22,exit after data end
+P1,NZD,2026-09-15,exit after data end
+P3,NZD,2010-03-09,no ATR20 (warm-up)
+P3,NZD,2026-09-29,exit after data end
+P5,NZD,2010-01-05,no ATR20 (warm-up)
+P5,NZD,2010-01-12,no ATR20 (warm-up)
+P5,NZD,2010-01-19,no ATR20 (warm-up)
+P5,NZD,2010-01-26,no ATR20 (warm-up)
+P5,NZD,2010-02-02,no ATR20 (warm-up)
+P5,NZD,2010-02-16,no ATR20 (warm-up)
+P5,NZD,2010-02-23,no ATR20 (warm-up)
+P6,NZD,2010-01-05,no ATR20 (warm-up)
+P6,NZD,2010-02-02,no ATR20 (warm-up)
+P7,NZD,2010-01-26,no ATR20 (warm-up)
+P7,NZD,2010-02-09,no ATR20 (warm-up)
+P7,NZD,2010-02-16,no ATR20 (warm-up)
+P7,NZD,2010-03-02,no ATR20 (warm-up)
+P7,NZD,2010-03-09,no ATR20 (warm-up)
+P8,NZD,2010-01-26,no ATR20 (warm-up)
+P8,NZD,2010-02-09,no ATR20 (warm-up)
+P8,NZD,2010-02-16,no ATR20 (warm-up)
+P8,NZD,2010-03-02,no ATR20 (warm-up)
+P8,NZD,2010-03-09,no ATR20 (warm-up)
