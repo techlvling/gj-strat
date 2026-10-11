@@ -1,0 +1,19 @@
+## Verdict (plain English)
+
+**As specified, this strategy can't be evaluated. The 1m entry almost never fires, and on the trades that do exist it beats neither benchmark.**
+
+* **Too few trades.** Over 1,696 tradable days (2020-01-02 to 2026-10-09) the 16 combos make **2 to 14 trades each**. In-sample the most is **8**, against the 100-trade minimum. Under the agreed rule **no combo qualifies, so nothing was ranked, selected or tested out-of-sample.** Every expectancy in this report is noise: one trade flipping from -1R to +2R moves it by 0.2R or more.
+* **Does the 15m filter add anything? No evidence that it does.** In-sample, all 8 fixed-2R combos did worse than the no-filter benchmark with the same break-even setting. For example, BE off: -1.00R on 3-8 trades vs -0.33R on 48. The base setup's in-sample result sits at the **11th percentile** of the random-direction runs, so a coin flip on direction did better 89% of the time. Out-of-sample it has 3 trades (+0.92R, 56th percentile): meaningless. The rule was "useful only if it beats BOTH benchmarks". It beats neither in-sample, and the samples are too small to claim anything either way.
+* **The 1m entry pattern shows no edge on its own either.** Without the 15m filter (both directions, swept level near VAH/VAL, 2R) it makes **86 trades: -0.33R in-sample and -0.14R out-of-sample** with BE off, -0.25R / -0.01R with BE on. That's still under 100 trades, and its random-direction percentiles are 36-53, so the direction it picks carries no information.
+* **Weakest point: the two 1.5 x ATR(20, 1m) body tests.** The 15m bias isn't the bottleneck: a bias exists on 93-94% of days with B2 on (48-56% with B2 off). The 1m pattern is:
+  * Of the base setup's 1,395 sweeps, 872 die for lack of a drive-in. In **771 of those the gap was there but no bearish bar reached 1.5 x ATR**.
+  * Another 248 pass the drive-in but get no drive-out within 5 bars. In **138 of those price did close back above the gap, but with too small a body**. The median best drive-out body was 0.84 x ATR.
+  * Only 4.4% of 1m bars between 09:30 and 11:00 clear 1.5 x ATR at all. Requiring two such bars within about 15 minutes, plus a gap, plus a fresh sweep, plus the bias, leaves about one trade a year.
+  * This isn't caused by my reading of the ATR. Measuring ATR on the 20 bars *before* the tested bar gives 2-17 trades per combo.
+* **There's also a logic tension.** A B1 long says price was rejected back into value and should go to POC. The entry then waits for a *new* low to be swept after that, which means price broke down again. The 5 base-setup longs all lost.
+* **Execution realism isn't the issue.** Entering at the next bar's open instead of the signal close changes expectancy by 0.00-0.01R. The spread (median 1.4 pts, 1.1 in 2026) is small next to stops of 25-360 pts. No result is flagged as unrealistically good, and every sample is flagged as under 100 trades.
+
+**What to test next** (each as a new, pre-declared sweep with its own in-sample/out-of-sample split; none of these were run here):
+1. **Test the 15m idea on its own.** Enter at the close of the bias-confirming 15m bar, stop beyond that 15m sweep's extreme plus the spread, target POC or 2R, with the same exits and limits. That gives on the order of 1,000+ trades, so the core claim (rejection/acceptance at the overnight value area predicts the 09:30-11:00 move) can actually be judged against the same benchmarks.
+2. If the 1m trigger matters to you, **loosen it once, before looking**: for example, one big bar instead of two, or a drive-out body of 1.0 x ATR. Treat the no-filter result (-0.14 to -0.33R) as the honest prior for what that pattern is worth.
+3. **More history** helps a little but doesn't fix this. Dukascopy USATECH goes back to 2011 and those years are already in `datastore/`. That would add about 2,300 days, which is still only around 30 trades per combo with the current trigger.
